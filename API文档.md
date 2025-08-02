@@ -396,6 +396,195 @@ Authorization: Bearer <your_token>
 
 ---
 
+## 今日运势 API
+
+### 1. 获取今日运势
+
+**接口地址**: `POST /api/fortune/daily`
+
+**请求头**:
+```
+Authorization: Bearer <your_token>
+```
+
+**请求参数**:
+```json
+{
+    "date": "2025-01-15",
+    "user_context": {
+        "birth_date": "1998-05-20",
+        "zodiac_sign": "金牛座",
+        "birth_year": "1998",
+        "gender": "女"
+    }
+}
+```
+
+**参数说明**:
+- `date`: 查询日期 YYYY-MM-DD格式 (必填)
+- `user_context`: 用户信息 (可选，用于个性化运势)
+    - `birth_date`: 出生日期
+    - `zodiac_sign`: 星座
+    - `birth_year`: 出生年份
+    - `gender`: 性别
+
+**响应示例**:
+```json
+{
+    "code": 200,
+    "message": "今日运势获取成功",
+    "data": {
+        "date": "2025-01-15",
+        "overall_score": 85,
+        "fortune_summary": "今天是充满机遇的一天，保持积极心态会带来意想不到的收获",
+        "categories": {
+            "love": {
+                "score": 80,
+                "title": "爱情运势",
+                "description": "感情生活和谐，单身者有机会遇到心仪对象",
+                "color": "#FF6B6B",
+                "icon": "heart"
+            },
+            "career": {
+                "score": 90,
+                "title": "事业运势", 
+                "description": "工作效率极高，适合推进重要项目",
+                "color": "#4ECDC4",
+                "icon": "briefcase"
+            },
+            "wealth": {
+                "score": 70,
+                "title": "财运",
+                "description": "理财谨慎，避免冲动消费",
+                "color": "#FFD700", 
+                "icon": "dollar"
+            },
+            "health": {
+                "score": 85,
+                "title": "健康运势",
+                "description": "精力充沛，适合运动健身",
+                "color": "#96CEB4",
+                "icon": "heart_plus"
+            }
+        },
+        "lucky_elements": {
+            "color": "#4ECDC4",
+            "number": [3, 7, 15],
+            "direction": "东南方",
+            "time": "下午2-4点"
+        },
+        "suggestions": [
+            "今天适合主动出击，把握机会",
+            "多与他人沟通交流，会有意外收获",
+            "保持乐观心态，好运自然来"
+        ],
+        "warnings": [
+            "避免在决策时过于冲动",
+            "注意与同事的沟通方式"
+        ]
+    }
+}
+```
+
+---
+
+### 2. Claude AI 今日运势提示词模板
+
+**服务端实现参考** - 调用Claude API时使用以下提示词：
+
+```
+你是一个专业的运势分析师，基于用户信息和日期生成个性化的今日运势。
+
+## 用户信息
+日期: {date}
+出生日期: {birth_date}
+星座: {zodiac_sign}  
+出生年份: {birth_year}
+性别: {gender}
+
+## 运势分析要求
+1. 综合考虑星座、生肖、数字命理等因素
+2. 内容要积极正面，给人希望和动力
+3. 建议要实用可行，避免过于玄幻
+4. 语言要温暖亲切，贴近年轻人表达习惯
+
+## 评分标准
+- 90-100分: 运势极佳，大吉大利
+- 80-89分: 运势良好，顺风顺水  
+- 70-79分: 运势平稳，稳中有进
+- 60-69分: 运势一般，需要努力
+- 50-59分: 运势偏弱，谨慎行事
+
+## 输出格式
+请严格按照以下JSON格式返回：
+
+{
+  "date": "查询日期",
+  "overall_score": 综合运势评分(50-100),
+  "fortune_summary": "今日运势总结(30-50字)",
+  "categories": {
+    "love": {
+      "score": 爱情运势评分(50-100),
+      "title": "爱情运势",
+      "description": "爱情运势描述(20-30字)",
+      "color": "#FF6B6B",
+      "icon": "heart"
+    },
+    "career": {
+      "score": 事业运势评分(50-100),
+      "title": "事业运势",
+      "description": "事业运势描述(20-30字)", 
+      "color": "#4ECDC4",
+      "icon": "briefcase"
+    },
+    "wealth": {
+      "score": 财运评分(50-100),
+      "title": "财运",
+      "description": "财运描述(20-30字)",
+      "color": "#FFD700",
+      "icon": "dollar"
+    },
+    "health": {
+      "score": 健康运势评分(50-100),
+      "title": "健康运势", 
+      "description": "健康运势描述(20-30字)",
+      "color": "#96CEB4",
+      "icon": "heart_plus"
+    }
+  },
+  "lucky_elements": {
+    "color": "幸运颜色代码",
+    "number": [3个幸运数字],
+    "direction": "幸运方位",
+    "time": "幸运时间段"
+  },
+  "suggestions": [
+    "建议1(15-25字)",
+    "建议2(15-25字)", 
+    "建议3(15-25字)"
+  ],
+  "warnings": [
+    "注意事项1(15-25字)",
+    "注意事项2(15-25字)"
+  ]
+}
+
+## 注意事项
+1. 所有评分必须在50-100之间
+2. 颜色代码必须是有效的hex格式
+3. 幸运数字为1-31之间的整数
+4. 描述要简洁有用，避免空泛的话语
+5. 保持积极正面的语调
+```
+
+**说明**:
+- 需要用户登录认证
+- 基于Claude AI生成个性化运势
+- 支持星座、生肖等多维度分析
+- 返回详细的运势数据供客户端展示
+
+---
+
 ## 需要认证的 API
 
 以下接口需要在请求头中携带 `Authorization: Bearer <token>`

@@ -9,6 +9,7 @@ import '../diary/diary_list_page.dart';
 import '../diary/diary_edit_page.dart';
 import '../../widgets/emotion_gradient_background.dart';
 import '../../widgets/emotion_test_button.dart';
+import '../../services/fortune_service.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -127,6 +128,170 @@ class HomePage extends ConsumerWidget {
 
   void _showProfile(BuildContext context) {
     Navigator.pushNamed(context, '/profile');
+  }
+
+  void _showTodayFortune(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.auto_awesome, color: Colors.orange, size: 28),
+            const SizedBox(width: 8),
+            const Text('今日运势'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 综合运势
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange.withOpacity(0.1), Colors.yellow.withOpacity(0.1)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('综合运势', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text('85分', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text('今天是充满机遇的一天，保持积极心态会带来意想不到的收获！', 
+                         style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // 分类运势
+              _buildFortuneCategory('爱情运势', Icons.favorite, Colors.pink, 80, '感情生活和谐，单身者有机会遇到心仪对象'),
+              const SizedBox(height: 8),
+              _buildFortuneCategory('事业运势', Icons.work, Colors.blue, 90, '工作效率极高，适合推进重要项目'),
+              const SizedBox(height: 8),
+              _buildFortuneCategory('财运', Icons.attach_money, Colors.green, 70, '理财谨慎，避免冲动消费'),
+              const SizedBox(height: 8),
+              _buildFortuneCategory('健康运势', Icons.favorite_border, Colors.teal, 85, '精力充沛，适合运动健身'),
+              
+              const SizedBox(height: 16),
+              
+              // 幸运元素
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('幸运元素', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.palette, size: 16, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text('幸运颜色: '),
+                        Container(width: 16, height: 16, color: Color(0xFF4ECDC4)),
+                        const SizedBox(width: 8),
+                        Text('青绿色'),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.stars, size: 16, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text('幸运数字: 3, 7, 15'),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.explore, size: 16, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text('幸运方位: 东南方'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // 建议
+              Text('今日建议', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              _buildSuggestionItem('今天适合主动出击，把握机会'),
+              _buildSuggestionItem('多与他人沟通交流，会有意外收获'),
+              _buildSuggestionItem('保持乐观心态，好运自然来'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('知道了'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFortuneCategory(String title, IconData icon, Color color, int score, String description) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: color.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(description, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              ],
+            ),
+          ),
+          Text('${score}分', style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('• ', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+          Expanded(child: Text(text, style: TextStyle(fontSize: 13))),
+        ],
+      ),
+    );
   }
 
   @override
@@ -344,13 +509,11 @@ class HomePage extends ConsumerWidget {
                                       children: [
                                         Expanded(
                                           child: _buildFeatureCard(
-                                            icon: Icons.timeline,
-                                            title: '情绪分析',
+                                            icon: Icons.auto_awesome,
+                                            title: '今日运势',
                                             color: Colors.orange,
                                             onTap: () {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('功能开发中...')),
-                                              );
+                                              _showTodayFortune(context);
                                             },
                                           ),
                                         ),
