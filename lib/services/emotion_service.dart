@@ -87,7 +87,7 @@ class EmotionAnalysisResult {
 }
 
 class EmotionService {
-  static const String baseUrl = 'http://localhost:8080/api';
+  static const String baseUrl = 'http://192.168.31.90:8080/api';
   
   /// 分析日记内容的情绪
   static Future<EmotionAnalysisResult?> analyzeDiary({
