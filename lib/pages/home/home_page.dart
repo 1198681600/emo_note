@@ -608,23 +608,23 @@ class HomePage extends ConsumerWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white.withOpacity(0.75),
+          foregroundColor: color,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: color.withOpacity(0.3)),
           ),
-          elevation: 8,
-          shadowColor: color.withOpacity(0.3),
+          elevation: 2,
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Icon(icon, size: 30),
+              child: Icon(icon, size: 30, color: color),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -634,9 +634,10 @@ class HomePage extends ConsumerWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: color,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -644,13 +645,13 @@ class HomePage extends ConsumerWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: color.withOpacity(0.7),
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 20),
+            Icon(Icons.arrow_forward_ios, size: 20, color: color),
           ],
         ),
       ),
@@ -708,7 +709,7 @@ class HomePage extends ConsumerWidget {
     
     // 确保日记列表已加载
     if (diaryProvider.diaries.isEmpty && !diaryProvider.isLoading) {
-      await diaryProvider.loadDiaries();
+      await diaryProvider.loadDiaries(context: context);
     }
     
     // 检查今天是否已有日记

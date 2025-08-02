@@ -190,10 +190,10 @@ class _DiaryEditPageState extends ConsumerState<DiaryEditPage> {
 
       if (widget.isEditing) {
         print('执行更新日记操作');
-        success = await diaryProvider.updateDiary(widget.diary!.id, content);
+        success = await diaryProvider.updateDiary(widget.diary!.id, content, context: context);
       } else {
         print('执行创建日记操作');
-        success = await diaryProvider.createDiary(content);
+        success = await diaryProvider.createDiary(content, context: context);
       }
       
       print('日记保存结果: ${success ? '成功' : '失败'}');

@@ -22,6 +22,11 @@ class _EmotionStatisticsPageState extends State<EmotionStatisticsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // 首次打开时检查是否需要加载历史记录
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndLoadDiaries();
+    });
   }
 
   @override
@@ -117,12 +122,22 @@ class _EmotionStatisticsPageState extends State<EmotionStatisticsPage>
                                 color: Colors.white.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(15),
                               ),
+                              indicatorSize: TabBarIndicatorSize.tab,
                               labelColor: Colors.white,
                               unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
-                              tabs: const [
-                                Tab(text: '分布'),
-                                Tab(text: '趋势'),
-                                Tab(text: 'TOP3'),
+                              tabs: [
+                                Container(
+                                  width: double.infinity,
+                                  child: const Tab(text: '分布'),
+                                ),
+                                Container(
+                                  width: double.infinity,
+                                  child: const Tab(text: '趋势'),
+                                ),
+                                Container(
+                                  width: double.infinity,
+                                  child: const Tab(text: 'TOP3'),
+                                ),
                               ],
                             ),
                           ),
@@ -332,9 +347,10 @@ class _EmotionStatisticsPageState extends State<EmotionStatisticsPage>
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
-                        if (index >= 0 && index < trendData.length) {
+                        if (index >= 0 && index < trendData.length && index % 2 == 0) {
                           return Text(
                             DateFormat('M/d').format(trendData[index]['date']),
                             style: const TextStyle(
@@ -351,14 +367,18 @@ class _EmotionStatisticsPageState extends State<EmotionStatisticsPage>
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 40,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
-                          ),
-                        );
+                        if (value >= 0) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          );
+                        }
+                        return const Text('');
                       },
                     ),
                   ),
@@ -376,15 +396,16 @@ class _EmotionStatisticsPageState extends State<EmotionStatisticsPage>
                     width: 1,
                   ),
                 ),
+                minY: 0,
                 lineBarsData: [
                   LineChartBarData(
                     spots: trendData.asMap().entries.map((entry) {
                       return FlSpot(
                         entry.key.toDouble(),
-                        entry.value['count'].toDouble(),
+                        entry.value['count'].toDouble().clamp(0.0, double.infinity),
                       );
                     }).toList(),
-                    isCurved: true,
+                    isCurved: false,
                     color: Colors.white,
                     barWidth: 3,
                     belowBarData: BarAreaData(
@@ -610,5 +631,14 @@ class _EmotionStatisticsPageState extends State<EmotionStatisticsPage>
     }
     
     return trendData;
+  }
+  
+  Future<void> _checkAndLoadDiaries() async {
+    final diaryProvider = Provider.of<DiaryProvider>(context, listen: false);
+    
+    // 如果没有日记数据，请求历史记录
+    if (diaryProvider.diaries.isEmpty) {
+      await diaryProvider.loadDiaries(context: context);
+    }
   }
 }

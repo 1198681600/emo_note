@@ -18,7 +18,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DiaryProvider>().loadDiaries();
+      context.read<DiaryProvider>().loadDiaries(context: context);
     });
   }
 
@@ -60,7 +60,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
                   ElevatedButton(
                     onPressed: () {
                       diaryProvider.clearError();
-                      diaryProvider.loadDiaries();
+                      diaryProvider.loadDiaries(context: context);
                     },
                     child: const Text('重试'),
                   ),
@@ -101,7 +101,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
           }
 
           return RefreshIndicator(
-            onRefresh: () => diaryProvider.loadDiaries(),
+            onRefresh: () => diaryProvider.loadDiaries(context: context),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: diaryProvider.diaries.length,

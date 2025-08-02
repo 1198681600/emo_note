@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
 import '../widgets/emotion_gradient_background.dart';
+import 'api_logger.dart';
 
 class EmotionAnalysisResult {
   final List<EmotionData> emotions;
@@ -23,6 +24,33 @@ class EmotionAnalysisResult {
   factory EmotionAnalysisResult.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
     
+    // 解析情绪数据
+    final emotionsJson = data['emotions'] as List;
+    final emotions = emotionsJson.map((emotionJson) {
+      return EmotionData(
+        emotion: emotionJson['emotion'],
+        color: _parseColor(emotionJson['color']),
+        intensity: (emotionJson['intensity'] as num).toDouble(),
+        time: _parseTimeFromPeriod(emotionJson['time_period']),
+      );
+    }).toList();
+
+    // 解析渐变类型
+    final gradientTypeStr = data['gradient_suggestion']['type'] as String;
+    final gradientType = _parseGradientType(gradientTypeStr);
+
+    return EmotionAnalysisResult(
+      emotions: emotions,
+      gradientType: gradientType,
+      reasoning: data['gradient_suggestion']['reasoning'],
+      summary: data['summary'],
+      insights: List<String>.from(data['insights']),
+      recommendations: List<String>.from(data['recommendations']),
+    );
+  }
+  
+  /// 从API响应中直接解析情绪数据（用于日记API的emotion_data字段）
+  factory EmotionAnalysisResult.fromApiResponse(Map<String, dynamic> data) {
     // 解析情绪数据
     final emotionsJson = data['emotions'] as List;
     final emotions = emotionsJson.map((emotionJson) {
@@ -76,12 +104,57 @@ class EmotionAnalysisResult {
     switch (typeStr) {
       case 'radial':
         return EmotionGradientType.radial;
+      case 'sweep':
       case 'timeFlow':
         return EmotionGradientType.timeFlow;
+      case 'multiPoint':
       case 'dayCircle':
         return EmotionGradientType.dayCircle;
+      case 'diagonal':
+      case 'wave':
+        return EmotionGradientType.timeFlow; // 暂时映射到timeFlow
       default:
         return EmotionGradientType.radial;
+    }
+  }
+  
+  /// 转换为JSON格式（用于序列化）
+  Map<String, dynamic> toJson() {
+    return {
+      'emotions': emotions.map((emotion) => {
+        'emotion': emotion.emotion,
+        'color': '#${emotion.color.value.toRadixString(16).substring(2).toUpperCase()}',
+        'intensity': emotion.intensity,
+        'time_period': _formatTimePeriod(emotion.time),
+      }).toList(),
+      'gradient_suggestion': {
+        'type': _formatGradientType(gradientType),
+        'reasoning': reasoning,
+      },
+      'summary': summary,
+      'insights': insights,
+      'recommendations': recommendations,
+    };
+  }
+  
+  static String _formatTimePeriod(DateTime time) {
+    final hour = time.hour;
+    if (hour >= 6 && hour < 12) return '上午';
+    if (hour >= 12 && hour < 14) return '中午';
+    if (hour >= 14 && hour < 18) return '下午';
+    return '晚上';
+  }
+  
+  static String _formatGradientType(EmotionGradientType type) {
+    switch (type) {
+      case EmotionGradientType.radial:
+        return 'radial';
+      case EmotionGradientType.timeFlow:
+        return 'sweep';
+      case EmotionGradientType.dayCircle:
+        return 'multiPoint';
+      default:
+        return 'radial';
     }
   }
 }
@@ -96,39 +169,62 @@ class EmotionService {
     required String token,
     Map<String, dynamic>? userContext,
   }) async {
-    try {
-      final url = Uri.parse('$baseUrl/emotion/analyze-diary');
-      
-      final requestBody = {
-        'diary_content': diaryContent,
-        'diary_date': diaryDate,
-        if (userContext != null) 'user_context': userContext,
-      };
+    final url = Uri.parse('$baseUrl/emotion/analyze-diary');
+    
+    final requestBody = {
+      'diary_content': diaryContent,
+      'diary_date': diaryDate,
+      if (userContext != null) 'user_context': userContext,
+    };
+    
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: 'POST',
+      url: url.toString(),
+      headers: headers,
+      body: requestBody,
+    );
 
-      print('发送情绪分析请求到: $url');
-      print('请求体: ${json.encode(requestBody)}');
-      
+    try {
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: headers,
         body: json.encode(requestBody),
       );
-
-      print('响应状态码: ${response.statusCode}');
-      print('响应内容: ${response.body}');
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: 'POST',
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
+      );
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         return EmotionAnalysisResult.fromJson(responseData);
       } else {
-        print('情绪分析失败: ${response.statusCode} - ${response.body}');
         return null;
       }
-    } catch (e) {
-      print('情绪分析请求异常: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: 'POST',
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -139,32 +235,61 @@ class EmotionService {
     required List<Map<String, dynamic>> diaryData,
     required String token,
   }) async {
-    try {
-      final url = Uri.parse('$baseUrl/emotion/analyze-weekly');
-      
-      final requestBody = {
-        'week_start': weekStart,
-        'diary_data': diaryData,
-      };
+    final url = Uri.parse('$baseUrl/emotion/analyze-weekly');
+    
+    final requestBody = {
+      'week_start': weekStart,
+      'diary_data': diaryData,
+    };
+    
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: 'POST',
+      url: url.toString(),
+      headers: headers,
+      body: requestBody,
+    );
 
+    try {
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: headers,
         body: json.encode(requestBody),
+      );
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: 'POST',
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
       );
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         return responseData['data'];
       } else {
-        print('周趋势分析失败: ${response.statusCode} - ${response.body}');
         return null;
       }
-    } catch (e) {
-      print('周趋势分析请求异常: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: 'POST',
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }

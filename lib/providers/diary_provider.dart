@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/diary.dart';
 import '../services/api_service.dart';
+import '../services/emotion_service.dart';
+import '../providers/emotion_provider.dart';
+import 'package:provider/provider.dart';
 
 class DiaryProvider with ChangeNotifier {
   List<Diary> _diaries = [];
@@ -21,7 +24,7 @@ class DiaryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadDiaries() async {
+  Future<void> loadDiaries({BuildContext? context}) async {
     _setLoading(true);
     _setError(null);
 
@@ -29,6 +32,17 @@ class DiaryProvider with ChangeNotifier {
       final response = await ApiService.getDiaries();
       if (response.isSuccess && response.data != null) {
         _diaries = response.data!;
+        
+        // 同步情绪数据到EmotionProvider
+        if (context != null) {
+          final emotionProvider = Provider.of<EmotionProvider>(context, listen: false);
+          for (final diary in _diaries) {
+            if (diary.hasEmotionData) {
+              final diaryDate = _formatDate(diary.date);
+              await emotionProvider.saveEmotionResult(diaryDate, diary.emotionData!);
+            }
+          }
+        }
       } else {
         _setError(response.message);
       }
@@ -39,14 +53,23 @@ class DiaryProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> createDiary(String content, {String? date}) async {
+  Future<bool> createDiary(String content, {String? date, BuildContext? context}) async {
     _setLoading(true);
     _setError(null);
 
     try {
       final response = await ApiService.createDiary(content, date: date);
       if (response.isSuccess && response.data != null) {
-        _diaries.insert(0, response.data!);
+        final diary = response.data!;
+        _diaries.insert(0, diary);
+        
+        // 如果日记有情绪数据，同步到EmotionProvider
+        if (diary.hasEmotionData && context != null) {
+          final emotionProvider = Provider.of<EmotionProvider>(context, listen: false);
+          final diaryDate = _formatDate(diary.date);
+          await emotionProvider.saveEmotionResult(diaryDate, diary.emotionData!);
+        }
+        
         notifyListeners();
         return true;
       } else {
@@ -81,16 +104,25 @@ class DiaryProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateDiary(int id, String content) async {
+  Future<bool> updateDiary(int id, String content, {BuildContext? context}) async {
     _setLoading(true);
     _setError(null);
 
     try {
       final response = await ApiService.updateDiary(id, content);
       if (response.isSuccess && response.data != null) {
+        final diary = response.data!;
         final index = _diaries.indexWhere((d) => d.id == id);
         if (index != -1) {
-          _diaries[index] = response.data!;
+          _diaries[index] = diary;
+          
+          // 如果日记有情绪数据，同步到EmotionProvider
+          if (diary.hasEmotionData && context != null) {
+            final emotionProvider = Provider.of<EmotionProvider>(context, listen: false);
+            final diaryDate = _formatDate(diary.date);
+            await emotionProvider.saveEmotionResult(diaryDate, diary.emotionData!);
+          }
+          
           notifyListeners();
         }
         return true;
@@ -135,16 +167,41 @@ class DiaryProvider with ChangeNotifier {
   // 检查今天是否已有日记
   Diary? getTodayDiary() {
     final today = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayStr = _formatDate(today);
     
     try {
       return _diaries.firstWhere((diary) {
         final diaryDate = diary.date.toLocal();
-        final diaryStr = '${diaryDate.year}-${diaryDate.month.toString().padLeft(2, '0')}-${diaryDate.day.toString().padLeft(2, '0')}';
+        final diaryStr = _formatDate(diaryDate);
         return diaryStr == todayStr;
       });
     } catch (e) {
       return null;
     }
+  }
+  
+  /// 格式化日期为字符串
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+  
+  /// 获取指定日期的日记
+  Diary? getDiaryByDate(DateTime date) {
+    final dateStr = _formatDate(date);
+    
+    try {
+      return _diaries.firstWhere((diary) {
+        final diaryDate = diary.date.toLocal();
+        final diaryStr = _formatDate(diaryDate);
+        return diaryStr == dateStr;
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  /// 获取有情绪数据的日记列表
+  List<Diary> get diariesWithEmotion {
+    return _diaries.where((diary) => diary.hasEmotionData).toList();
   }
 }

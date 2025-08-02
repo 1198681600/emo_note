@@ -166,7 +166,7 @@ Authorization: Bearer <your_token>
 - `diary_date`: 日记日期 YYYY-MM-DD格式 (必填)
 - `user_context`: 用户背景信息 (可选，有助于更精准的分析)
     - `age`: 年龄
-    - `gender`: 性别  
+    - `gender`: 性别
     - `profession`: 职业
 
 **响应示例**:
@@ -297,6 +297,11 @@ Authorization: Bearer <your_token>
 }
 ```
 
+**说明**:
+- 需要用户登录认证
+- 基于Claude AI进行智能分析
+- 返回详细的一周情绪模式和建议
+
 ---
 
 ### 3. Claude AI 提示词模板
@@ -338,12 +343,6 @@ Authorization: Bearer <your_token>
 - 温暖: #FFB8B8 (粉色)
 - 孤独: #636E72 (灰色)
 - 迷茫: #B2BEC3 (浅灰色)
-
-## 渐变类型建议规则
-- 1种情绪: radial (辐射渐变)
-- 2种情绪: diagonal (斜角渐变)
-- 3种情绪: sweep (扫描渐变)  
-- 4+种情绪: multiPoint (多焦点渐变)
 
 ## 输出格式
 请严格按照以下JSON格式返回，不要包含任何其他文字：
@@ -396,195 +395,6 @@ Authorization: Bearer <your_token>
 
 ---
 
-## 今日运势 API
-
-### 1. 获取今日运势
-
-**接口地址**: `POST /api/fortune/daily`
-
-**请求头**:
-```
-Authorization: Bearer <your_token>
-```
-
-**请求参数**:
-```json
-{
-    "date": "2025-01-15",
-    "user_context": {
-        "birth_date": "1998-05-20",
-        "zodiac_sign": "金牛座",
-        "birth_year": "1998",
-        "gender": "女"
-    }
-}
-```
-
-**参数说明**:
-- `date`: 查询日期 YYYY-MM-DD格式 (必填)
-- `user_context`: 用户信息 (可选，用于个性化运势)
-    - `birth_date`: 出生日期
-    - `zodiac_sign`: 星座
-    - `birth_year`: 出生年份
-    - `gender`: 性别
-
-**响应示例**:
-```json
-{
-    "code": 200,
-    "message": "今日运势获取成功",
-    "data": {
-        "date": "2025-01-15",
-        "overall_score": 85,
-        "fortune_summary": "今天是充满机遇的一天，保持积极心态会带来意想不到的收获",
-        "categories": {
-            "love": {
-                "score": 80,
-                "title": "爱情运势",
-                "description": "感情生活和谐，单身者有机会遇到心仪对象",
-                "color": "#FF6B6B",
-                "icon": "heart"
-            },
-            "career": {
-                "score": 90,
-                "title": "事业运势", 
-                "description": "工作效率极高，适合推进重要项目",
-                "color": "#4ECDC4",
-                "icon": "briefcase"
-            },
-            "wealth": {
-                "score": 70,
-                "title": "财运",
-                "description": "理财谨慎，避免冲动消费",
-                "color": "#FFD700", 
-                "icon": "dollar"
-            },
-            "health": {
-                "score": 85,
-                "title": "健康运势",
-                "description": "精力充沛，适合运动健身",
-                "color": "#96CEB4",
-                "icon": "heart_plus"
-            }
-        },
-        "lucky_elements": {
-            "color": "#4ECDC4",
-            "number": [3, 7, 15],
-            "direction": "东南方",
-            "time": "下午2-4点"
-        },
-        "suggestions": [
-            "今天适合主动出击，把握机会",
-            "多与他人沟通交流，会有意外收获",
-            "保持乐观心态，好运自然来"
-        ],
-        "warnings": [
-            "避免在决策时过于冲动",
-            "注意与同事的沟通方式"
-        ]
-    }
-}
-```
-
----
-
-### 2. Claude AI 今日运势提示词模板
-
-**服务端实现参考** - 调用Claude API时使用以下提示词：
-
-```
-你是一个专业的运势分析师，基于用户信息和日期生成个性化的今日运势。
-
-## 用户信息
-日期: {date}
-出生日期: {birth_date}
-星座: {zodiac_sign}  
-出生年份: {birth_year}
-性别: {gender}
-
-## 运势分析要求
-1. 综合考虑星座、生肖、数字命理等因素
-2. 内容要积极正面，给人希望和动力
-3. 建议要实用可行，避免过于玄幻
-4. 语言要温暖亲切，贴近年轻人表达习惯
-
-## 评分标准
-- 90-100分: 运势极佳，大吉大利
-- 80-89分: 运势良好，顺风顺水  
-- 70-79分: 运势平稳，稳中有进
-- 60-69分: 运势一般，需要努力
-- 50-59分: 运势偏弱，谨慎行事
-
-## 输出格式
-请严格按照以下JSON格式返回：
-
-{
-  "date": "查询日期",
-  "overall_score": 综合运势评分(50-100),
-  "fortune_summary": "今日运势总结(30-50字)",
-  "categories": {
-    "love": {
-      "score": 爱情运势评分(50-100),
-      "title": "爱情运势",
-      "description": "爱情运势描述(20-30字)",
-      "color": "#FF6B6B",
-      "icon": "heart"
-    },
-    "career": {
-      "score": 事业运势评分(50-100),
-      "title": "事业运势",
-      "description": "事业运势描述(20-30字)", 
-      "color": "#4ECDC4",
-      "icon": "briefcase"
-    },
-    "wealth": {
-      "score": 财运评分(50-100),
-      "title": "财运",
-      "description": "财运描述(20-30字)",
-      "color": "#FFD700",
-      "icon": "dollar"
-    },
-    "health": {
-      "score": 健康运势评分(50-100),
-      "title": "健康运势", 
-      "description": "健康运势描述(20-30字)",
-      "color": "#96CEB4",
-      "icon": "heart_plus"
-    }
-  },
-  "lucky_elements": {
-    "color": "幸运颜色代码",
-    "number": [3个幸运数字],
-    "direction": "幸运方位",
-    "time": "幸运时间段"
-  },
-  "suggestions": [
-    "建议1(15-25字)",
-    "建议2(15-25字)", 
-    "建议3(15-25字)"
-  ],
-  "warnings": [
-    "注意事项1(15-25字)",
-    "注意事项2(15-25字)"
-  ]
-}
-
-## 注意事项
-1. 所有评分必须在50-100之间
-2. 颜色代码必须是有效的hex格式
-3. 幸运数字为1-31之间的整数
-4. 描述要简洁有用，避免空泛的话语
-5. 保持积极正面的语调
-```
-
-**说明**:
-- 需要用户登录认证
-- 基于Claude AI生成个性化运势
-- 支持星座、生肖等多维度分析
-- 返回详细的运势数据供客户端展示
-
----
-
 ## 需要认证的 API
 
 以下接口需要在请求头中携带 `Authorization: Bearer <token>`
@@ -622,7 +432,7 @@ Authorization: Bearer <your_token>
 
 ### 3. 更新用户信息
 
-**接口地址**: `PUT /api/profile`
+**接口地址**: `POST /api/profile`
 
 **请求头**:
 ```
@@ -763,13 +573,90 @@ Authorization: Bearer <your_token>
 
 ---
 
+## 🆕 日记 API (集成情绪分析)
+
+**重要更新**: 从 v2.0 开始，所有日记相关接口都集成了情绪分析功能。
+
+### 功能特点
+
+1. **自动情绪分析**: 保存或更新日记时自动调用 Claude AI 进行情绪分析
+2. **完整情绪数据**: 返回详细的情绪信息，包括情绪类型、强度、时间段、颜色等
+3. **渐变建议**: 基于情绪数据提供背景渐变类型建议
+4. **智能洞察**: 提供个性化的情绪分析洞察和建议
+5. **历史数据**: 获取日记时包含完整的历史情绪分析数据
+
+### 数据结构说明
+
+#### 情绪分析响应格式
+```json
+{
+    "emotion_data": {
+        "emotions": [
+            {
+                "emotion": "情绪名称",           // 从预定义情绪列表中选择
+                "intensity": 0.8,             // 情绪强度 (0.0-1.0)
+                "time_period": "上午",         // 时间段: 上午/中午/下午/晚上
+                "color": "#FFD700",           // 情绪对应的颜色代码
+                "description": "情绪描述"      // 20字以内的简短描述
+            }
+        ],
+        "gradient_suggestion": {
+            "type": "sweep",                  // 渐变类型: radial/sweep/multiPoint/wave/diagonal
+            "reasoning": "选择原因"           // 选择此渐变类型的原因
+        },
+        "summary": {
+            "dominant_emotion": "主导情绪",   // 整体主导情绪
+            "emotional_stability": 7.5,     // 情绪稳定性评分 (1-10)
+            "mood_trend": "整体趋势",        // 情绪趋势描述
+            "energy_level": "中等偏高"       // 能量水平: 低/中等/高
+        },
+        "insights": [                        // 最多5个分析洞察
+            "分析洞察1",
+            "分析洞察2"
+        ],
+        "recommendations": [                 // 最多5个建议
+            "建议1",
+            "建议2"
+        ]
+    }
+}
+```
+
+#### 支持的情绪类型和颜色
+| 情绪 | 颜色代码 | 色彩描述 |
+|------|----------|----------|
+| 开心 | #FFD700 | 金黄色 |
+| 快乐 | #FF6B6B | 珊瑚红 |
+| 兴奋 | #FF8E53 | 橙色 |
+| 平静 | #4ECDC4 | 青绿色 |
+| 放松 | #45B7D1 | 天蓝色 |
+| 满足 | #96CEB4 | 薄荷绿 |
+| 难过 | #6C5CE7 | 紫色 |
+| 沮丧 | #74B9FF | 蓝色 |
+| 焦虑 | #FDCB6E | 淡黄色 |
+| 紧张 | #E17055 | 橙红色 |
+| 愤怒 | #D63031 | 红色 |
+| 烦躁 | #E84393 | 粉红色 |
+| 感动 | #A29BFE | 淡紫色 |
+| 温暖 | #FFB8B8 | 粉色 |
+| 孤独 | #636E72 | 灰色 |
+| 迷茫 | #B2BEC3 | 浅灰色 |
+
+#### 渐变类型规则
+- **1种情绪**: `radial` (径向渐变)
+- **2种情绪**: `diagonal` (对角线渐变)
+- **3种情绪**: `sweep` (扫描渐变)
+- **4+种情绪**: `multiPoint` (多焦点渐变)
+
+---
+
 ## 日记 API
 
 ### 1. 创建日记
 
 **接口地址**: `POST /api/diary/create`
 
-**说明**: 创建一篇新的日记。每个用户每天只能创建一篇日记。
+**说明**: 创建一篇新的日记。每个用户每天只能创建一篇日记。**保存时自动进行情绪分析并返回完整的情绪数据**。
 
 **请求头**:
 `Authorization: Bearer <your_token>`
@@ -780,7 +667,7 @@ Authorization: Bearer <your_token>
 **请求参数**:
 ```json
 {
-    "content": "这是我的第一篇日记。"
+    "content": "今天心情很好，上午工作很顺利，完成了重要的项目。中午和同事一起吃饭聊天很开心。下午开会时有点紧张，但最终顺利通过了。晚上回家看到家人很温暖。"
 }
 ```
 
@@ -796,7 +683,60 @@ Authorization: Bearer <your_token>
     "DeletedAt": null,
     "UserID": 1,
     "Date": "2025-08-03T00:00:00Z",
-    "Content": "这是我的第一篇日记。"
+    "Content": "今天心情很好，上午工作很顺利，完成了重要的项目。中午和同事一起吃饭聊天很开心。下午开会时有点紧张，但最终顺利通过了。晚上回家看到家人很温暖。",
+    "EmotionAnalysis": "{\"emotions\":[{\"emotion\":\"开心\",\"intensity\":0.8,\"time_period\":\"上午\",\"color\":\"#FFD700\",\"description\":\"工作顺利带来的满足感\"},...],\"summary\":{...}}",
+    "emotion_data": {
+        "emotions": [
+            {
+                "emotion": "开心",
+                "intensity": 0.8,
+                "time_period": "上午",
+                "color": "#FFD700",
+                "description": "工作顺利带来的满足感"
+            },
+            {
+                "emotion": "快乐",
+                "intensity": 0.7,
+                "time_period": "中午",
+                "color": "#FF6B6B",
+                "description": "与同事交流的愉悦感"
+            },
+            {
+                "emotion": "紧张",
+                "intensity": 0.6,
+                "time_period": "下午",
+                "color": "#E17055",
+                "description": "开会前的焦虑情绪"
+            },
+            {
+                "emotion": "温暖",
+                "intensity": 0.9,
+                "time_period": "晚上",
+                "color": "#FFB8B8",
+                "description": "家庭温馨带来的感动"
+            }
+        ],
+        "gradient_suggestion": {
+            "type": "sweep",
+            "reasoning": "一天中有多种情绪转换，适合使用扫描渐变展现情绪轮转"
+        },
+        "summary": {
+            "dominant_emotion": "积极",
+            "emotional_stability": 7.5,
+            "mood_trend": "整体向好",
+            "energy_level": "中等偏高"
+        },
+        "insights": [
+            "今天整体情绪状态良好，工作和家庭都给你带来了正面情绪",
+            "下午的紧张情绪是正常的工作压力反应，但最终得到了很好的缓解",
+            "家庭关系是你重要的情绪支撑点"
+        ],
+        "recommendations": [
+            "继续保持工作和生活的平衡",
+            "可以在开会前做一些深呼吸来缓解紧张",
+            "多和家人分享工作中的成就"
+        ]
+    }
 }
 ```
 
@@ -806,6 +746,12 @@ Authorization: Bearer <your_token>
     "error": "diary already exists for this date"
 }
 ```
+或
+```json
+{
+    "error": "failed to analyze emotion: API request failed"
+}
+```
 
 ---
 
@@ -813,7 +759,7 @@ Authorization: Bearer <your_token>
 
 **接口地址**: `POST /api/diary/list`
 
-**说明**: 获取当前用户的所有日记，按创建时间降序排列。
+**说明**: 获取当前用户的所有日记，按创建时间降序排列。**返回所有日记的情绪分析数据**。
 
 **请求头**:
 `Authorization: Bearer <your_token>`
@@ -830,7 +776,31 @@ Authorization: Bearer <your_token>
         "DeletedAt": null,
         "UserID": 1,
         "Date": "2025-08-04T00:00:00Z",
-        "Content": "这是我的第二篇日记。"
+        "Content": "今天工作有点累，但是完成了任务，心情还不错。",
+        "EmotionAnalysis": "{\"emotions\":[{\"emotion\":\"满足\",\"intensity\":0.7,\"time_period\":\"晚上\",\"color\":\"#96CEB4\",\"description\":\"完成任务的成就感\"}],\"summary\":{...}}",
+        "emotion_data": {
+            "emotions": [
+                {
+                    "emotion": "满足",
+                    "intensity": 0.7,
+                    "time_period": "晚上",
+                    "color": "#96CEB4",
+                    "description": "完成任务的成就感"
+                }
+            ],
+            "gradient_suggestion": {
+                "type": "radial",
+                "reasoning": "单一情绪适合径向渐变"
+            },
+            "summary": {
+                "dominant_emotion": "满足",
+                "emotional_stability": 7,
+                "mood_trend": "稳定",
+                "energy_level": "中等"
+            },
+            "insights": ["虽然工作劳累，但任务完成带来了满足感"],
+            "recommendations": ["适当休息，保持工作与休息的平衡"]
+        }
     },
     {
         "ID": 1,
@@ -839,7 +809,15 @@ Authorization: Bearer <your_token>
         "DeletedAt": null,
         "UserID": 1,
         "Date": "2025-08-03T00:00:00Z",
-        "Content": "这是我的第一篇日记。"
+        "Content": "今天心情很好，上午工作很顺利...",
+        "EmotionAnalysis": "{\"emotions\":[...],\"summary\":{...}}",
+        "emotion_data": {
+            "emotions": [...],
+            "gradient_suggestion": {...},
+            "summary": {...},
+            "insights": [...],
+            "recommendations": [...]
+        }
     }
 ]
 ```
@@ -850,7 +828,7 @@ Authorization: Bearer <your_token>
 
 **接口地址**: `POST /api/diary/get`
 
-**说明**: 获取指定 ID 的日记。
+**说明**: 获取指定 ID 的日记。**返回完整的情绪分析数据**。
 
 **请求头**:
 `Authorization: Bearer <your_token>`
@@ -874,7 +852,60 @@ Authorization: Bearer <your_token>
     "DeletedAt": null,
     "UserID": 1,
     "Date": "2025-08-03T00:00:00Z",
-    "Content": "这是我的第一篇日记。"
+    "Content": "今天心情很好，上午工作很顺利，完成了重要的项目。中午和同事一起吃饭聊天很开心。下午开会时有点紧张，但最终顺利通过了。晚上回家看到家人很温暖。",
+    "EmotionAnalysis": "{\"emotions\":[{\"emotion\":\"开心\",\"intensity\":0.8,\"time_period\":\"上午\",\"color\":\"#FFD700\",\"description\":\"工作顺利带来的满足感\"},...],\"summary\":{...}}",
+    "emotion_data": {
+        "emotions": [
+            {
+                "emotion": "开心",
+                "intensity": 0.8,
+                "time_period": "上午",
+                "color": "#FFD700",
+                "description": "工作顺利带来的满足感"
+            },
+            {
+                "emotion": "快乐",
+                "intensity": 0.7,
+                "time_period": "中午",
+                "color": "#FF6B6B",
+                "description": "与同事交流的愉悦感"
+            },
+            {
+                "emotion": "紧张",
+                "intensity": 0.6,
+                "time_period": "下午",
+                "color": "#E17055",
+                "description": "开会前的焦虑情绪"
+            },
+            {
+                "emotion": "温暖",
+                "intensity": 0.9,
+                "time_period": "晚上",
+                "color": "#FFB8B8",
+                "description": "家庭温馨带来的感动"
+            }
+        ],
+        "gradient_suggestion": {
+            "type": "sweep",
+            "reasoning": "一天中有多种情绪转换，适合使用扫描渐变展现情绪轮转"
+        },
+        "summary": {
+            "dominant_emotion": "积极",
+            "emotional_stability": 7.5,
+            "mood_trend": "整体向好",
+            "energy_level": "中等偏高"
+        },
+        "insights": [
+            "今天整体情绪状态良好，工作和家庭都给你带来了正面情绪",
+            "下午的紧张情绪是正常的工作压力反应，但最终得到了很好的缓解",
+            "家庭关系是你重要的情绪支撑点"
+        ],
+        "recommendations": [
+            "继续保持工作和生活的平衡",
+            "可以在开会前做一些深呼吸来缓解紧张",
+            "多和家人分享工作中的成就"
+        ]
+    }
 }
 ```
 
@@ -897,7 +928,7 @@ Authorization: Bearer <your_token>
 
 **接口地址**: `POST /api/diary/update`
 
-**说明**: 更新指定 ID 的日记。
+**说明**: 更新指定 ID 的日记。**更新时会重新进行情绪分析并返回新的情绪数据**。
 
 **请求头**:
 `Authorization: Bearer <your_token>`
@@ -906,7 +937,7 @@ Authorization: Bearer <your_token>
 ```json
 {
     "id": 1,
-    "content": "更新后的日记内容。"
+    "content": "更新后的日记内容：今天心情有所改善，虽然上午还是有点忧郁，但下午看到阳光心情好了很多。晚上和朋友聊天很开心。"
 }
 ```
 
@@ -923,7 +954,53 @@ Authorization: Bearer <your_token>
     "DeletedAt": null,
     "UserID": 1,
     "Date": "2025-08-03T00:00:00Z",
-    "Content": "更新后的日记内容。"
+    "Content": "更新后的日记内容：今天心情有所改善，虽然上午还是有点忧郁，但下午看到阳光心情好了很多。晚上和朋友聊天很开心。",
+    "EmotionAnalysis": "{\"emotions\":[{\"emotion\":\"忧郁\",\"intensity\":0.6,\"time_period\":\"上午\",\"color\":\"#74B9FF\",\"description\":\"上午的低落情绪\"},...],\"summary\":{...}}",
+    "emotion_data": {
+        "emotions": [
+            {
+                "emotion": "沮丧",
+                "intensity": 0.6,
+                "time_period": "上午",
+                "color": "#74B9FF",
+                "description": "上午的低落情绪"
+            },
+            {
+                "emotion": "开心",
+                "intensity": 0.8,
+                "time_period": "下午",
+                "color": "#FFD700",
+                "description": "阳光带来的愉悦感"
+            },
+            {
+                "emotion": "快乐",
+                "intensity": 0.9,
+                "time_period": "晚上",
+                "color": "#FF6B6B",
+                "description": "与朋友交流的快乐"
+            }
+        ],
+        "gradient_suggestion": {
+            "type": "diagonal",
+            "reasoning": "情绪从低落转向积极，适合对角线渐变展现转变过程"
+        },
+        "summary": {
+            "dominant_emotion": "积极转变",
+            "emotional_stability": 6.5,
+            "mood_trend": "逐步改善",
+            "energy_level": "中等"
+        },
+        "insights": [
+            "今天经历了情绪的转变，从上午的低落到下午晚上的积极",
+            "阳光和朋友是你重要的情绪调节因素",
+            "能够从负面情绪中恢复展现了良好的情绪调节能力"
+        ],
+        "recommendations": [
+            "多接触阳光和自然环境",
+            "继续保持与朋友的交流",
+            "认识到自己的情绪调节能力并加以运用"
+        ]
+    }
 }
 ```
 
@@ -986,40 +1063,40 @@ Authorization: Bearer <your_token>
 ### 参数错误
 ```json
 {
-  "code": 400,
-  "message": "请求参数错误"
+    "code": 400,
+    "message": "请求参数错误"
 }
 ```
 
 ### 用户已存在
 ```json
 {
-  "code": 400,
-  "message": "用户已存在"
+    "code": 400,
+    "message": "用户已存在"
 }
 ```
 
 ### 验证码错误
 ```json
 {
-  "code": 400,
-  "message": "验证码无效或已过期"
+    "code": 400,
+    "message": "验证码无效或已过期"
 }
 ```
 
 ### 用户不存在
 ```json
 {
-  "code": 400,
-  "message": "用户不存在"
+    "code": 400,
+    "message": "用户不存在"
 }
 ```
 
 ### 邮箱未验证
 ```json
 {
-  "code": 400,
-  "message": "请先验证邮箱"
+    "code": 400,
+    "message": "请先验证邮箱"
 }
 ```
 
@@ -1027,8 +1104,8 @@ Authorization: Bearer <your_token>
 ### Token无效
 ```json
 {
-  "code": 401,
-  "message": "token无效或已过期"
+    "code": 401,
+    "message": "token无效或已过期"
 }
 ```
 
@@ -1074,7 +1151,7 @@ Authorization: Bearer <your_token>
 
 4. **更新用户信息**
    ```bash
-   curl -X PUT http://localhost:8080/api/profile \
+   curl -X POST http://localhost:8080/api/profile \
      -H "Authorization: Bearer your_token_here" \
      -H "Content-Type: application/json" \
      -d '{
@@ -1092,20 +1169,19 @@ Authorization: Bearer <your_token>
      -H "Authorization: Bearer your_token_here"
    ```
 
-6. **分析情绪变化**
+6. **分析日记情绪**
    ```bash
-   curl -X POST http://localhost:8080/api/emotion/analyze-daily \
+   curl -X POST http://localhost:8080/api/emotion/analyze-diary \
      -H "Authorization: Bearer your_token_here" \
      -H "Content-Type: application/json" \
      -d '{
-       "user_data": [
-         {
-           "timestamp": "2025-01-01T09:00:00Z",
-           "emotion": "开心",
-           "intensity": 8,
-           "content": "今天心情很好"
-         }
-       ]
+       "diary_content": "今天心情很好，工作很顺利。",
+       "diary_date": "2025-01-15",
+       "user_context": {
+         "age": 25,
+         "gender": "女",
+         "profession": "软件工程师"
+       }
      }'
    ```
 
@@ -1137,3 +1213,42 @@ Authorization: Bearer <your_token>
 - `token`: 会话token
 - `expires_at`: 过期时间
 - `created_at`: 创建时间
+
+### Diaries 表 (已更新)
+- `id`: 日记ID (主键)
+- `user_id`: 用户ID (外键，唯一索引：idx_user_date)
+- `date`: 日记日期 (唯一索引：idx_user_date)
+- `content`: 日记内容 (text类型)
+- **`emotion_analysis`**: 🆕 情绪分析数据 (text类型，JSON格式)
+- `created_at`: 创建时间
+- `updated_at`: 更新时间
+- `deleted_at`: 删除时间 (软删除)
+
+## 🔄 v2.0 版本变更说明
+
+### 新增功能
+1. **集成情绪分析**: 所有日记接口自动包含情绪分析功能
+2. **智能情绪识别**: 基于Claude AI的16种情绪类型识别
+3. **渐变背景建议**: 根据情绪组合智能推荐渐变类型
+4. **个性化洞察**: 提供针对性的情绪分析和建议
+
+### 数据库变更
+- 新增 `emotion_analysis` 字段到 `diaries` 表
+- 使用JSON格式存储完整的情绪分析结果
+- 自动迁移，无需手动更新现有数据
+
+### API变更
+- **创建日记**: 返回格式包含 `emotion_data` 字段
+- **获取日记**: 返回格式包含 `emotion_data` 字段
+- **更新日记**: 重新分析情绪并返回新的 `emotion_data`
+- **获取日记列表**: 所有日记都包含 `emotion_data` 字段
+
+### 向后兼容
+- 原有的日记数据结构保持不变
+- 新增的 `emotion_data` 字段在没有情绪分析时为 `null`
+- 现有客户端可以忽略新字段继续正常工作
+
+### 性能影响
+- 创建/更新日记时会调用Claude API，响应时间略有增加
+- 获取日记时无额外API调用，性能无影响
+- 建议客户端显示加载状态以提升用户体验

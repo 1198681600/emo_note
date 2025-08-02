@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/diary.dart';
+import 'api_logger.dart';
 
 class ApiResponse<T> {
   final int code;
@@ -54,8 +55,19 @@ class ApiService {
     Map<String, dynamic>? body,
     T Function(dynamic)? fromJson,
   }) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final requestBody = body != null ? jsonEncode(body) : null;
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: method,
+      url: url.toString(),
+      headers: _headers,
+      body: body,
+    );
+    
     try {
-      final url = Uri.parse('$baseUrl$endpoint');
       http.Response response;
 
       switch (method.toUpperCase()) {
@@ -66,14 +78,14 @@ class ApiService {
           response = await httpClient.post(
             url,
             headers: _headers,
-            body: body != null ? jsonEncode(body) : null,
+            body: requestBody,
           );
           break;
         case 'PUT':
           response = await httpClient.put(
             url,
             headers: _headers,
-            body: body != null ? jsonEncode(body) : null,
+            body: requestBody,
           );
           break;
         case 'DELETE':
@@ -82,6 +94,18 @@ class ApiService {
         default:
           throw Exception('Unsupported HTTP method: $method');
       }
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: method,
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
+      );
       
       final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
       
@@ -94,8 +118,15 @@ class ApiService {
       }
       
       return ApiResponse.fromJson(jsonData, fromJson);
-    } catch (e) {
-      debugPrint('API请求错误: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: method,
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
+      
       return ApiResponse<T>(
         code: 500,
         message: '网络请求失败: $e',
@@ -170,12 +201,35 @@ class ApiService {
       body['date'] = date;
     }
     
+    final url = Uri.parse('$baseUrl/diary/create');
+    final requestBody = jsonEncode(body);
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: 'POST',
+      url: url.toString(),
+      headers: _headers,
+      body: body,
+    );
+    
     try {
-      final url = Uri.parse('$baseUrl/diary/create');
       final response = await httpClient.post(
         url,
         headers: _headers,
-        body: jsonEncode(body),
+        body: requestBody,
+      );
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: 'POST',
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
       );
       
       final jsonData = jsonDecode(response.body);
@@ -199,8 +253,15 @@ class ApiService {
       }
       
       throw Exception('Unexpected response format');
-    } catch (e) {
-      debugPrint('API请求错误: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: 'POST',
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
+      
       return ApiResponse<Diary>(
         code: 500,
         message: '网络请求失败: $e',
@@ -209,9 +270,30 @@ class ApiService {
   }
 
   static Future<ApiResponse<List<Diary>>> getDiaries() async {
+    final url = Uri.parse('$baseUrl/diary/list');
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: 'POST',
+      url: url.toString(),
+      headers: _headers,
+    );
+    
     try {
-      final url = Uri.parse('$baseUrl/diary/list');
       final response = await httpClient.post(url, headers: _headers);
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: 'POST',
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
+      );
       
       final jsonData = jsonDecode(response.body);
       
@@ -243,8 +325,15 @@ class ApiService {
       }
       
       throw Exception('Unexpected response format');
-    } catch (e) {
-      debugPrint('API请求错误: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: 'POST',
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
+      
       return ApiResponse<List<Diary>>(
         code: 500,
         message: '网络请求失败: $e',
@@ -253,12 +342,36 @@ class ApiService {
   }
 
   static Future<ApiResponse<Diary>> getDiary(int id) async {
+    final url = Uri.parse('$baseUrl/diary/get');
+    final body = {'id': id};
+    final requestBody = jsonEncode(body);
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: 'POST',
+      url: url.toString(),
+      headers: _headers,
+      body: body,
+    );
+    
     try {
-      final url = Uri.parse('$baseUrl/diary/get');
       final response = await httpClient.post(
         url,
         headers: _headers,
-        body: jsonEncode({'id': id}),
+        body: requestBody,
+      );
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: 'POST',
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
       );
       
       final jsonData = jsonDecode(response.body);
@@ -282,8 +395,15 @@ class ApiService {
       }
       
       throw Exception('Unexpected response format');
-    } catch (e) {
-      debugPrint('API请求错误: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: 'POST',
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
+      
       return ApiResponse<Diary>(
         code: 500,
         message: '网络请求失败: $e',
@@ -292,15 +412,39 @@ class ApiService {
   }
 
   static Future<ApiResponse<Diary>> updateDiary(int id, String content) async {
+    final url = Uri.parse('$baseUrl/diary/update');
+    final body = {
+      'id': id,
+      'content': content,
+    };
+    final requestBody = jsonEncode(body);
+    final startTime = DateTime.now();
+    
+    // 记录请求日志
+    ApiLogger.logRequest(
+      method: 'POST',
+      url: url.toString(),
+      headers: _headers,
+      body: body,
+    );
+    
     try {
-      final url = Uri.parse('$baseUrl/diary/update');
       final response = await httpClient.post(
         url,
         headers: _headers,
-        body: jsonEncode({
-          'id': id,
-          'content': content,
-        }),
+        body: requestBody,
+      );
+      
+      final duration = DateTime.now().difference(startTime);
+      
+      // 记录响应日志
+      ApiLogger.logResponse(
+        method: 'POST',
+        url: url.toString(),
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body,
+        duration: duration,
       );
       
       final jsonData = jsonDecode(response.body);
@@ -324,8 +468,15 @@ class ApiService {
       }
       
       throw Exception('Unexpected response format');
-    } catch (e) {
-      debugPrint('API请求错误: $e');
+    } catch (e, stackTrace) {
+      // 记录错误日志
+      ApiLogger.logError(
+        method: 'POST',
+        url: url.toString(),
+        error: e,
+        stackTrace: stackTrace,
+      );
+      
       return ApiResponse<Diary>(
         code: 500,
         message: '网络请求失败: $e',
