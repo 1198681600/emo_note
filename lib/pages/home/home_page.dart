@@ -93,13 +93,57 @@ class HomePage extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => _showProfile(context),
+                    PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        switch (value) {
+                          case 'profile':
+                            _showProfile(context);
+                            break;
+                          case 'update':
+                            await _launchUpdate();
+                            break;
+                          case 'logout':
+                            await ref.read(authProvider.notifier).logout();
+                            break;
+                        }
+                      },
                       icon: Icon(
-                        Icons.settings,
+                        Icons.more_vert,
                         color: Colors.white.withOpacity(0.8),
                         size: 28,
                       ),
+                      itemBuilder: (BuildContext context) => [
+                        const PopupMenuItem<String>(
+                          value: 'profile',
+                          child: Row(
+                            children: [
+                              Icon(Icons.settings, size: 20),
+                              SizedBox(width: 12),
+                              Text('个人设置'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'update',
+                          child: Row(
+                            children: [
+                              Icon(Icons.system_update_outlined, size: 20),
+                              SizedBox(width: 12),
+                              Text('检查更新'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'logout',
+                          child: Row(
+                            children: [
+                              Icon(Icons.logout_outlined, size: 20),
+                              SizedBox(width: 12),
+                              Text('退出登录'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -109,193 +153,137 @@ class HomePage extends ConsumerWidget {
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 20),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.75),
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                      const SizedBox(height: 30),
-                      
-                      // 标题
-                      const Text(
-                        '情绪日记',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF6C63FF),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '记录每一天的心情变化',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 40),
-                      
-                      // 功能按钮区域
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        child: Column(
-                          children: [
-                              // 主要功能按钮
-                              _buildMainButton(
-                                context,
-                                icon: Icons.edit_note,
-                                title: '记录心情',
-                                subtitle: '写下今天的情绪和感受',
-                                color: const Color(0xFF6C63FF),
-                                onTap: () {
-                                  _handleRecordMood(context);
-                                },
+                  child: Column(
+                    children: [
+                      // 可滚动的主要内容
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 30),
+                              
+                              // 标题
+                              const Text(
+                                '情绪日记',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF6C63FF),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                '记录每一天的心情变化',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 40),
                               
-                              // 次要功能按钮网格
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildFeatureCard(
-                                      icon: Icons.timeline,
-                                      title: '情绪分析',
-                                      color: Colors.orange,
+                              // 功能按钮区域
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 30),
+                                child: Column(
+                                  children: [
+                                    // 主要功能按钮
+                                    _buildMainButton(
+                                      context,
+                                      icon: Icons.edit_note,
+                                      title: '记录心情',
+                                      subtitle: '写下今天的情绪和感受',
+                                      color: const Color(0xFF6C63FF),
                                       onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('功能开发中...')),
-                                        );
+                                        _handleRecordMood(context);
                                       },
                                     ),
-                                  ),
-                                  const SizedBox(width: 15),
-                                  Expanded(
-                                    child: _buildFeatureCard(
-                                      icon: Icons.calendar_today,
-                                      title: '历史记录',
-                                      color: Colors.green,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => const DiaryListPage(),
+                                    
+                                    const SizedBox(height: 20),
+                                    
+                                    // 次要功能按钮网格
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildFeatureCard(
+                                            icon: Icons.timeline,
+                                            title: '情绪分析',
+                                            color: Colors.orange,
+                                            onTap: () {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('功能开发中...')),
+                                              );
+                                            },
                                           ),
-                                        );
-                                      },
+                                        ),
+                                        const SizedBox(width: 15),
+                                        Expanded(
+                                          child: _buildFeatureCard(
+                                            icon: Icons.calendar_today,
+                                            title: '历史记录',
+                                            color: Colors.green,
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => const DiaryListPage(),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                    
+                                    const SizedBox(height: 15),
+                                    
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildFeatureCard(
+                                            icon: Icons.psychology,
+                                            title: '情绪建议',
+                                            color: Colors.purple,
+                                            onTap: () {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('功能开发中...')),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 15),
+                                        Expanded(
+                                          child: _buildFeatureCard(
+                                            icon: Icons.share,
+                                            title: '分享',
+                                            color: Colors.teal,
+                                            onTap: () {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('功能开发中...')),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    
+                                    const SizedBox(height: 50),
+                                  ],
+                                ),
                               ),
-                              
-                              const SizedBox(height: 15),
-                              
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildFeatureCard(
-                                      icon: Icons.psychology,
-                                      title: '情绪建议',
-                                      color: Colors.purple,
-                                      onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('功能开发中...')),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 15),
-                                  Expanded(
-                                    child: _buildFeatureCard(
-                                      icon: Icons.share,
-                                      title: '分享',
-                                      color: Colors.teal,
-                                      onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('功能开发中...')),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              
-                              const SizedBox(height: 30),
-                              
-                              // 增加底部空间
-                              const SizedBox(height: 30),
-                          ],
-                        ),
-                      ),
-                      
-                      // 添加底部间距
-                      const SizedBox(height: 10),
-                      
-                      // 底部按钮区域 - 紧贴底部
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.only(
-                          top: 20,
-                          bottom: MediaQuery.of(context).padding.bottom + 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20),
+                            ],
                           ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            TextButton.icon(
-                              onPressed: _launchUpdate,
-                              icon: Icon(
-                                Icons.system_update,
-                                size: 16,
-                                color: Colors.grey[600],
-                              ),
-                              label: Text(
-                                '检查更新',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 20,
-                              color: Colors.grey[300],
-                            ),
-                            TextButton.icon(
-                              onPressed: () async {
-                                await ref.read(authProvider.notifier).logout();
-                              },
-                              icon: Icon(
-                                Icons.logout,
-                                size: 16,
-                                color: Colors.grey[600],
-                              ),
-                              label: Text(
-                                '退出登录',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ],
-                    ),
                   ),
                 ),
               ),
@@ -380,11 +368,11 @@ class HomePage extends ConsumerWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.white.withOpacity(0.75),
           foregroundColor: color,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
-            side: BorderSide(color: color.withOpacity(0.2)),
+            side: BorderSide(color: color.withOpacity(0.3)),
           ),
           elevation: 2,
         ),
