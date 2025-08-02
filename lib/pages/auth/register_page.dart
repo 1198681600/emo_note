@@ -102,7 +102,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       _isLoading = true;
     });
 
-    final success = await ref.read(authProvider.notifier).register(email, code);
+    // 注册功能已移除，现在通过登录自动创建用户
+    final success = await ref.read(authProvider.notifier).login(email, code);
 
     setState(() {
       _isLoading = false;

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/diary.dart';
 import '../../providers/diary_provider.dart';
+import '../../services/share_service.dart';
 import 'diary_edit_page.dart';
 
 class DiaryDetailPage extends StatelessWidget {
@@ -29,6 +30,12 @@ class DiaryDetailPage extends StatelessWidget {
                 case 'edit':
                   _navigateToEdit(context);
                   break;
+                case 'share_image':
+                  _shareAsImage(context);
+                  break;
+                case 'share_text':
+                  _shareAsText(context);
+                  break;
                 case 'delete':
                   _showDeleteDialog(context);
                   break;
@@ -42,6 +49,26 @@ class DiaryDetailPage extends StatelessWidget {
                     Icon(Icons.edit, size: 20),
                     SizedBox(width: 8),
                     Text('编辑'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'share_image',
+                child: Row(
+                  children: [
+                    Icon(Icons.image, size: 20),
+                    SizedBox(width: 8),
+                    Text('分享图片'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'share_text',
+                child: Row(
+                  children: [
+                    Icon(Icons.text_snippet, size: 20),
+                    SizedBox(width: 8),
+                    Text('分享文字'),
                   ],
                 ),
               ),
@@ -140,10 +167,38 @@ class DiaryDetailPage extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToEdit(context),
-        child: const Icon(Icons.edit),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: () => _shareAsImage(context),
+            heroTag: "share",
+            backgroundColor: Colors.blue,
+            child: const Icon(Icons.share),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () => _navigateToEdit(context),
+            heroTag: "edit",
+            child: const Icon(Icons.edit),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _shareAsImage(BuildContext context) async {
+    await ShareService.shareDiaryAsImage(
+      context: context,
+      diary: diary,
+      emotion: '开心',
+    );
+  }
+
+  void _shareAsText(BuildContext context) async {
+    await ShareService.shareDiaryAsText(
+      diary: diary,
+      emotion: '开心',
     );
   }
 

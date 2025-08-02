@@ -47,6 +47,8 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>需要访问相册来保存分享图片</string>
 		<key>NSCameraUsageDescription</key>
 		<string>需要访问您的相机来拍摄头像照片</string>
 		<key>NSPhotoLibraryUsageDescription</key>

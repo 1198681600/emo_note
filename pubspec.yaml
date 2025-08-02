@@ -55,6 +55,10 @@ dependencies:
   cached_network_image: ^3.3.1
   fluttertoast: ^8.2.12
   image_picker: ^1.0.7
+  share_plus: ^7.2.2
+  path_provider: ^2.1.2
+  image_gallery_saver: ^2.0.3
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:

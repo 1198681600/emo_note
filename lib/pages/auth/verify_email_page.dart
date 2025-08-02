@@ -60,7 +60,8 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
       _isLoading = true;
     });
 
-    final success = await ref.read(authProvider.notifier).verifyEmail(
+    // 邮箱验证功能已移除，现在通过登录自动创建/验证用户
+    final success = await ref.read(authProvider.notifier).login(
       widget.email,
       _codeController.text.trim(),
     );

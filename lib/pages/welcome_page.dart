@@ -15,10 +15,6 @@ class WelcomePage extends StatelessWidget {
     Navigator.pushNamed(context, '/login');
   }
 
-  void _showRegister(BuildContext context) {
-    Navigator.pushNamed(context, '/register');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,28 +73,22 @@ class WelcomePage extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () => _showLogin(context),
                   icon: const Icon(Icons.login),
-                  label: const Text('登录'),
+                  label: const Text('开始使用'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF6C63FF),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () => _showRegister(context),
-                  icon: const Icon(Icons.person_add),
-                  label: const Text('注册'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF6C63FF),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
+                Text(
+                  '登录或自动创建新账号',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 40),

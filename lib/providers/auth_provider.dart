@@ -118,27 +118,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> register(String email, String code) async {
-    try {
-      final response = await ApiService.register(email, code);
-      return response.isSuccess;
-    } catch (e) {
-      return false;
-    }
-  }
-
   Future<bool> sendCode(String email) async {
     try {
       final response = await ApiService.sendCode(email);
-      return response.isSuccess;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> verifyEmail(String email, String code) async {
-    try {
-      final response = await ApiService.verifyEmail(email, code);
       return response.isSuccess;
     } catch (e) {
       return false;

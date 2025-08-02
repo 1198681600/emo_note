@@ -112,7 +112,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       Fluttertoast.showToast(msg: '登录成功');
       if (mounted) {
         // 登录成功后，AuthWrapper会自动处理导航逻辑
-        // 如果用户信息不完整，会跳转到信息完善页面
+        // 如果是新用户或用户信息不完整，会跳转到信息完善页面
         // 如果用户信息完整，会跳转到主页
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
@@ -308,24 +308,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                       ],
                       const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('还没有账号？'),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            child: const Text(
-                              '立即注册',
-                              style: TextStyle(
-                                color: Color(0xFF6C63FF),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                      Center(
+                        child: Text(
+                          '第一次登录？系统将自动为您创建账号',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),

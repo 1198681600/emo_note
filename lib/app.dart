@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'pages/welcome_page.dart';
 import 'pages/home/home_page.dart';
 import 'pages/auth/login_page.dart';
-import 'pages/auth/register_page.dart';
-import 'pages/auth/verify_email_page.dart';
 import 'pages/profile/profile_edit_page.dart';
 import 'providers/auth_provider.dart';
 
@@ -23,20 +21,10 @@ class MoodDiaryApp extends ConsumerWidget {
       routes: {
         '/welcome': (context) => const WelcomePage(),
         '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfileEditPage(),
         '/profile/edit': (context) => const ProfileEditPage(isFirstTime: false),
         '/profile/setup': (context) => const ProfileEditPage(isFirstTime: true),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/verify_email') {
-          final email = settings.arguments as String;
-          return MaterialPageRoute(
-            builder: (context) => VerifyEmailPage(email: email),
-          );
-        }
-        return null;
       },
     );
   }

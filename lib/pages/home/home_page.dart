@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart' as provider;
 import '../../providers/auth_provider.dart';
 import '../../providers/diary_provider.dart';
@@ -10,6 +12,9 @@ import '../diary/diary_edit_page.dart';
 import '../../widgets/emotion_gradient_background.dart';
 import '../../widgets/emotion_test_button.dart';
 import '../../services/fortune_service.dart';
+import '../../services/share_service.dart';
+import '../../models/diary.dart';
+import '../emotion/emotion_statistics_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -542,12 +547,15 @@ class HomePage extends ConsumerWidget {
                                       children: [
                                         Expanded(
                                           child: _buildFeatureCard(
-                                            icon: Icons.psychology,
-                                            title: '情绪建议',
+                                            icon: Icons.bar_chart,
+                                            title: '情绪统计',
                                             color: Colors.purple,
                                             onTap: () {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('功能开发中...')),
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => const EmotionStatisticsPage(),
+                                                ),
                                               );
                                             },
                                           ),
@@ -559,9 +567,7 @@ class HomePage extends ConsumerWidget {
                                             title: '分享',
                                             color: Colors.teal,
                                             onTap: () {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('功能开发中...')),
-                                              );
+                                              _showShareOptions(context);
                                             },
                                           ),
                                         ),
@@ -727,5 +733,148 @@ class HomePage extends ConsumerWidget {
         ),
       );
     }
+  }
+
+  void _showShareOptions(BuildContext context) {
+    final diaryProvider = provider.Provider.of<DiaryProvider>(context, listen: false);
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '分享选项',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            ListTile(
+              leading: Icon(Icons.palette, color: Colors.purple),
+              title: Text('分享情绪卡片'),
+              subtitle: Text('生成精美的情绪背景卡片'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _shareEmotionCard(context);
+              },
+            ),
+            
+            ListTile(
+              leading: Icon(Icons.text_snippet, color: Colors.green),
+              title: Text('分享应用'),
+              subtitle: Text('推荐朋友使用情绪日记'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _shareApp();
+              },
+            ),
+            
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _shareTodayDiary(BuildContext context, DiaryProvider diaryProvider) async {
+    final todayDiary = diaryProvider.getTodayDiary();
+    
+    if (todayDiary != null) {
+      await ShareService.shareDiaryAsImage(
+        context: context,
+        diary: todayDiary,
+        emotion: '开心',
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('今天还没有写日记哦~')),
+      );
+    }
+  }
+
+  Future<void> _shareEmotionCard(BuildContext context) async {
+    final emotionProvider = provider.Provider.of<EmotionProvider>(context, listen: false);
+    final diaryProvider = provider.Provider.of<DiaryProvider>(context, listen: false);
+    final todayEmotion = emotionProvider.getTodayEmotion();
+    
+    // 尝试获取今日日记，如果没有则创建示例内容
+    final todayDiary = diaryProvider.getTodayDiary();
+    final diary = todayDiary ?? Diary(
+      id: 0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      userId: 1,
+      date: DateTime.now(),
+      content: '今天心情不错，感受到了生活的美好。阳光很温暖，微风很舒适，一切都刚刚好。',
+    );
+    
+    final emotion = todayEmotion?.emotions.isNotEmpty == true 
+        ? todayEmotion!.emotions.first.emotion 
+        : '开心';
+    
+    await ShareService.shareDiaryAsImage(
+      context: context,
+      diary: diary,
+      emotion: emotion,
+    );
+  }
+
+  Future<void> _shareApp() async {
+    const text = '''📝 推荐一个超棒的情绪日记应用！
+
+✨ 记录每日心情变化
+🎨 智能情绪分析
+🌈 美丽渐变背景
+🔮 每日运势预测
+
+让我们一起记录生活中的美好时光~
+
+下载地址：https://www.pgyer.com/mood_diary''';
+    
+    try {
+      await Share.share(text);
+      debugPrint('应用分享已拉起系统分享面板');
+    } catch (e) {
+      debugPrint('分享失败: $e');
+      // 如果分享失败，降级为复制到剪贴板
+      try {
+        await Clipboard.setData(ClipboardData(text: text));
+        debugPrint('分享失败，已复制到剪贴板');
+      } catch (clipboardError) {
+        debugPrint('复制到剪贴板也失败: $clipboardError');
+      }
+    }
+  }
+
+  Future<void> _saveEmotionCardToGallery(BuildContext context) async {
+    final emotionProvider = provider.Provider.of<EmotionProvider>(context, listen: false);
+    final diaryProvider = provider.Provider.of<DiaryProvider>(context, listen: false);
+    final todayEmotion = emotionProvider.getTodayEmotion();
+    
+    // 尝试获取今日日记，如果没有则创建示例内容
+    final todayDiary = diaryProvider.getTodayDiary();
+    final diary = todayDiary ?? Diary(
+      id: 0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      userId: 1,
+      date: DateTime.now(),
+      content: '今天心情不错，感受到了生活的美好。阳光很温暖，微风很舒适，一切都刚刚好。',
+    );
+    
+    final emotion = todayEmotion?.emotions.isNotEmpty == true 
+        ? todayEmotion!.emotions.first.emotion 
+        : '开心';
+    
+    await ShareService.saveImageToGallery(
+      context: context,
+      diary: diary,
+      emotion: emotion,
+    );
   }
 }

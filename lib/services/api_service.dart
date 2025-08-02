@@ -107,19 +107,6 @@ class ApiService {
     return _request<void>('POST', '/auth/send-code', body: {'email': email});
   }
 
-  static Future<ApiResponse<void>> register(String email, String code) {
-    return _request<void>('POST', '/auth/register', body: {
-      'email': email,
-      'code': code,
-    });
-  }
-
-  static Future<ApiResponse<void>> verifyEmail(String email, String code) {
-    return _request<void>('POST', '/auth/verify-email', body: {
-      'email': email,
-      'code': code,
-    });
-  }
 
   static Future<ApiResponse<Map<String, dynamic>>> login(String email, String code) {
     return _request<Map<String, dynamic>>(
