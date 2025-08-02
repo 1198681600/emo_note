@@ -44,9 +44,17 @@ class EmotionTestButton extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                _applyTestGradient(context, 'full_day', '一天情绪轮回');
+                _applyTestGradient(context, 'full_day', '三色情绪融合');
               },
-              child: const Text('🌈 一天情绪轮回'),
+              child: const Text('🎨 三色情绪融合'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _applyTestGradient(context, 'circle_test', '圆形渐变测试');
+              },
+              child: const Text('🌀 圆形渐变测试'),
             ),
           ],
         ),
@@ -95,7 +103,7 @@ class EmotionTestButton extends StatelessWidget {
         gradientType = EmotionGradientType.timeFlow;
         break;
       case 'full_day':
-        // 一天情绪轮回 - 早中晚的情绪变化
+        // 三色情绪变化 - 早中晚的情绪变化
         testEmotions = [
           EmotionData(
             emotion: '平静',
@@ -115,11 +123,35 @@ class EmotionTestButton extends StatelessWidget {
             intensity: 0.9,
             time: today.add(const Duration(hours: 18)), // 傍晚6点
           ),
+        ];
+        gradientType = EmotionGradientType.multiPoint;
+        break;
+      case 'circle_test':
+        // 圆形渐变测试 - 四种情绪的循环效果
+        testEmotions = [
+          EmotionData(
+            emotion: '开心',
+            color: EmotionColorMapping.getEmotionColor('开心'),
+            intensity: 0.8,
+            time: today.add(const Duration(hours: 6)), // 早上6点
+          ),
+          EmotionData(
+            emotion: '焦虑',
+            color: EmotionColorMapping.getEmotionColor('焦虑'),
+            intensity: 0.7,
+            time: today.add(const Duration(hours: 12)), // 中午12点
+          ),
+          EmotionData(
+            emotion: '平静',
+            color: EmotionColorMapping.getEmotionColor('平静'),
+            intensity: 0.9,
+            time: today.add(const Duration(hours: 18)), // 傍晚6点
+          ),
           EmotionData(
             emotion: '温暖',
             color: EmotionColorMapping.getEmotionColor('温暖'),
             intensity: 0.8,
-            time: today.add(const Duration(hours: 21)), // 晚上9点
+            time: today.add(const Duration(hours: 22)), // 晚上10点
           ),
         ];
         gradientType = EmotionGradientType.dayCircle;

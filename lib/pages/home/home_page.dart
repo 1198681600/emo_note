@@ -346,7 +346,7 @@ class HomePage extends ConsumerWidget {
       body: EmotionGradientBackground(
         emotions: emotions,
         gradientType: gradientType,
-        animationDuration: const Duration(seconds: 4),
+        animationDuration: const Duration(seconds: 30),
         child: SafeArea(
           child: Column(
             children: [

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 enum EmotionGradientType {
-  radial,     // 辐射渐变 (单色，从中心向外)
-  timeFlow,   // 时间流动渐变 (双色，左右时间过渡)
-  dayCircle,  // 一日轮回渐变 (多色，圆形时间过渡)
+  radial,      // 辐射渐变 (单色，从中心向外)
+  timeFlow,    // 时间流动渐变 (双色，左右时间过渡)
+  multiPoint,  // 多焦点渐变 (三色，三角形布局)
+  dayCircle,   // 一日轮回渐变 (多色，圆形时间过渡)
+  diagonal,    // 对角线渐变 (情绪对比)
 }
 
 class EmotionData {
@@ -32,7 +34,7 @@ class EmotionGradientBackground extends StatefulWidget {
     required this.child,
     required this.emotions,
     this.gradientType = EmotionGradientType.radial,
-    this.animationDuration = const Duration(seconds: 3),
+    this.animationDuration = const Duration(seconds: 30),
   });
 
   @override
@@ -52,9 +54,11 @@ class _EmotionGradientBackgroundState extends State<EmotionGradientBackground>
       vsync: this,
     );
     _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _animationController, curve: Curves.linear),
     );
-    _animationController.forward();
+    
+    // 循环动画，让渐变更加生动
+    _animationController.repeat();
   }
 
   @override
@@ -69,11 +73,6 @@ class _EmotionGradientBackgroundState extends State<EmotionGradientBackground>
       animation: _animation,
       builder: (context, child) {
         final gradient = _createGradient();
-        
-        // 添加调试信息
-        print('渐变类型: ${widget.gradientType}');
-        print('情绪数量: ${widget.emotions.length}');
-        print('颜色数量: ${_getTimeBasedColors().length}');
         
         return Container(
           decoration: BoxDecoration(
@@ -91,8 +90,12 @@ class _EmotionGradientBackgroundState extends State<EmotionGradientBackground>
         return _createRadialGradient();
       case EmotionGradientType.timeFlow:
         return _createTimeFlowGradient();
+      case EmotionGradientType.multiPoint:
+        return _createMultiPointGradient();
       case EmotionGradientType.dayCircle:
         return _createDayCircleGradient();
+      case EmotionGradientType.diagonal:
+        return _createDiagonalGradient();
     }
   }
 
@@ -177,17 +180,136 @@ class _EmotionGradientBackgroundState extends State<EmotionGradientBackground>
     );
   }
 
+  // 多焦点渐变 - 三角形布局展现三种情绪
+  LinearGradient _createMultiPointGradient() {
+    final colors = _getTimeBasedColors();
+    final animationValue = _animation.value;
+    
+    if (colors.length >= 3) {
+      // 完整360度连续旋转 - 平滑的一整圈旋转
+      final angle = animationValue * 2 * math.pi; // 0 到 360度的连续变化
+      final beginAlignment = Alignment(
+        math.cos(angle) * 0.8, 
+        math.sin(angle) * 0.8
+      );
+      final endAlignment = Alignment(
+        -math.cos(angle) * 0.8, 
+        -math.sin(angle) * 0.8
+      );
+      
+      // 创建更平滑的三色过渡
+      return LinearGradient(
+        begin: beginAlignment,
+        end: endAlignment,
+        colors: [
+          colors[0],
+          _blendColors(colors[0], colors[1], 0.3),
+          _blendColors(colors[0], colors[1], 0.7),
+          colors[1],
+          _blendColors(colors[1], colors[2], 0.3),
+          _blendColors(colors[1], colors[2], 0.7),
+          colors[2],
+          _blendColors(colors[2], colors[0], 0.5), // 循环回第一种颜色
+        ],
+        stops: const [0.0, 0.15, 0.25, 0.4, 0.6, 0.75, 0.85, 1.0],
+      );
+    } else if (colors.length == 2) {
+      // 双色渐变也添加旋转效果
+      final angle = animationValue * 2 * math.pi;
+      final beginAlignment = Alignment(
+        math.cos(angle) * 0.9, 
+        math.sin(angle) * 0.9
+      );
+      final endAlignment = Alignment(
+        -math.cos(angle) * 0.9, 
+        -math.sin(angle) * 0.9
+      );
+      
+      return LinearGradient(
+        begin: beginAlignment,
+        end: endAlignment,
+        colors: colors,
+      );
+    } else {
+      // 单色情况：创建线性渐变而不是径向渐变
+      final baseColor = colors.isNotEmpty ? colors[0] : const Color(0xFF6C63FF);
+      return LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [baseColor, baseColor.withValues(alpha: 0.5)],
+      );
+    }
+  }
+
+  // 对角线渐变 - 强调情绪对比
+  LinearGradient _createDiagonalGradient() {
+    final colors = _getTimeBasedColors();
+    
+    // 动态角度：基于动画进度旋转
+    final animationValue = _animation.value;
+    final angle = animationValue * 2 * math.pi;
+    
+    return LinearGradient(
+      begin: Alignment(math.cos(angle), math.sin(angle)),
+      end: Alignment(-math.cos(angle), -math.sin(angle)),
+      colors: colors.length >= 2 ? colors : [colors[0], colors[0].withValues(alpha: 0.5)],
+      stops: _generateTimeStops(colors.length),
+    );
+  }
+
   // 一日轮回渐变 - 圆形表现一天的情绪轮回
   SweepGradient _createDayCircleGradient() {
     final timeBasedColors = _getTimeBasedColors();
+    
+    // 确保颜色列表不为空
+    if (timeBasedColors.isEmpty) {
+      return const SweepGradient(
+        colors: [Color(0xFF6C63FF), Color(0xFF4F46E5)],
+      );
+    }
+    
+    // 创建平滑的循环颜色序列，避免接缝
+    List<Color> circularColors = [];
+    List<double> circularStops = [];
+    
+    // 添加原始颜色
+    for (int i = 0; i < timeBasedColors.length; i++) {
+      circularColors.add(timeBasedColors[i]);
+      circularStops.add(i / timeBasedColors.length);
+    }
+    
+    // 添加第一个颜色到末尾，确保完美循环
+    circularColors.add(timeBasedColors.first);
+    circularStops.add(1.0);
+    
+    // 为了更平滑的过渡，在接缝处添加中间色
+    if (timeBasedColors.length > 1) {
+      final lastColor = timeBasedColors.last;
+      final firstColor = timeBasedColors.first;
+      final blendedColor = Color.lerp(lastColor, firstColor, 0.5);
+      
+      // 在接缝处插入混合色
+      circularColors.insert(circularColors.length - 1, blendedColor!);
+      circularStops.insert(circularStops.length - 1, 0.95);
+      
+      // 重新计算stops以保持正确的比例
+      for (int i = 0; i < circularStops.length - 2; i++) {
+        circularStops[i] = i / (circularStops.length - 2) * 0.9;
+      }
+    }
     
     return SweepGradient(
       center: Alignment.center,
       startAngle: -math.pi / 2, // 从顶部开始（代表早晨）
       endAngle: 3 * math.pi / 2, // 顺时针一圈
-      colors: timeBasedColors + [timeBasedColors.first], // 循环回到起点
-      stops: _generateCircularTimeStops(timeBasedColors.length),
+      colors: circularColors,
+      stops: circularStops,
     );
+  }
+
+  // 颜色混合工具函数
+  Color _blendColors(Color color1, Color color2, double ratio) {
+    return Color.lerp(color1, color2, ratio) ?? color1;
   }
 
 }
@@ -226,11 +348,11 @@ class EmotionColorMapping {
     
     // 根据情绪数量建议渐变类型
     if (emotions.length == 1) {
-      return EmotionGradientType.radial;    // 单色辐射渐变，表现情绪强度
+      return EmotionGradientType.radial;     // 单色辐射渐变，表现情绪强度
     } else if (emotions.length == 2) {
-      return EmotionGradientType.timeFlow;  // 双色时间流动，表现情绪变化
+      return EmotionGradientType.timeFlow;   // 双色时间流动，表现情绪变化
     } else {
-      return EmotionGradientType.dayCircle; // 多色一日轮回，表现复杂情绪
+      return EmotionGradientType.multiPoint; // 三色及以上多焦点渐变，更自然的过渡
     }
   }
 }
