@@ -119,4 +119,25 @@ class ApiService {
   static Future<ApiResponse<void>> logout() {
     return _request<void>('POST', '/logout');
   }
+
+  static Future<ApiResponse<Map<String, dynamic>>> updateProfile({
+    required String nickname,
+    required String gender,
+    required int age,
+    required String profession,
+    String? avatar,
+  }) {
+    return _request<Map<String, dynamic>>(
+      'PUT',
+      '/profile',
+      body: {
+        'nickname': nickname,
+        'gender': gender,
+        'age': age,
+        'profession': profession,
+        if (avatar != null) 'avatar': avatar,
+      },
+      fromJson: (data) => data as Map<String, dynamic>,
+    );
+  }
 }

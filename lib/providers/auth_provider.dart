@@ -54,9 +54,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (token != null && userJson != null) {
         ApiService.setToken(token);
         try {
-          final userMap = jsonDecode(userJson) as Map<String, dynamic>;
-          final user = User.fromJson(userMap);
-          
           // 验证token是否仍然有效
           final response = await ApiService.getProfile();
           
@@ -176,6 +173,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  Future<bool> updateProfile({
+    required String nickname,
+    required String gender,
+    required int age,
+    required String profession,
+    String? avatar,
+  }) async {
+    try {
+      final response = await ApiService.updateProfile(
+        nickname: nickname,
+        gender: gender,
+        age: age,
+        profession: profession,
+        avatar: avatar,
+      );
+      
+      if (response.isSuccess && response.data != null) {
+        final updatedUser = User.fromJson(response.data!);
+        await _saveAuthData(state.token!, updatedUser);
+        
+        state = state.copyWith(user: updatedUser);
+        return true;
+      } else {
+        state = state.copyWith(error: response.message);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(error: '更新失败: $e');
+      return false;
+    }
   }
 }
 

@@ -193,6 +193,55 @@ Authorization: Bearer <your_token>
 
 ---
 
+### 7. 更新用户信息
+
+**接口地址**: `PUT /api/profile`
+
+**请求头**:
+```
+Authorization: Bearer <your_token>
+```
+
+**请求参数**:
+```json
+{
+    "nickname": "我的昵称",
+    "gender": "男",
+    "age": 25,
+    "profession": "软件工程师",
+    "avatar": "https://example.com/avatar.jpg"
+}
+```
+
+**参数说明**:
+- `nickname`: 昵称，必填
+- `gender`: 性别，必填（男/女）
+- `age`: 年龄，必填
+- `profession`: 职业，必填
+- `avatar`: 头像URL，可选
+
+**响应示例**:
+```json
+{
+    "code": 200,
+    "message": "个人信息更新成功",
+    "data": {
+        "id": 1,
+        "email": "user@example.com",
+        "is_email_verified": true,
+        "avatar": "https://example.com/avatar.jpg",
+        "nickname": "我的昵称",
+        "gender": "男",
+        "age": 25,
+        "profession": "软件工程师",
+        "created_at": "2025-01-01T12:00:00Z",
+        "updated_at": "2025-01-01T12:30:00Z"
+    }
+}
+```
+
+---
+
 ## 错误码说明
 
 | 错误码 | 说明 |

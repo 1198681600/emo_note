@@ -109,7 +109,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     });
 
     if (success) {
-      Fluttertoast.showToast(msg: '注册成功');
+      Fluttertoast.showToast(msg: '注册成功，请登录');
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/login');
       }

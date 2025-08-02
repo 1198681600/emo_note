@@ -111,7 +111,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (success) {
       Fluttertoast.showToast(msg: '登录成功');
       if (mounted) {
-        Navigator.of(context).pop();
+        // 登录成功后，AuthWrapper会自动处理导航逻辑
+        // 如果用户信息不完整，会跳转到信息完善页面
+        // 如果用户信息完整，会跳转到主页
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
       }
     } else {
       final error = ref.read(authProvider).error;

@@ -84,6 +84,13 @@ class User {
     return email.split('@').first;
   }
 
+  bool get isProfileComplete {
+    return nickname.isNotEmpty && 
+           gender.isNotEmpty && 
+           age > 0 && 
+           profession.isNotEmpty;
+  }
+
   @override
   String toString() {
     return 'User(id: $id, email: $email, nickname: $nickname, isEmailVerified: $isEmailVerified)';
