@@ -137,11 +137,10 @@ class HomePage extends ConsumerWidget {
                       const SizedBox(height: 40),
                       
                       // 功能按钮区域
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
-                          child: Column(
-                            children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: Column(
+                          children: [
                               // 主要功能按钮
                               _buildMainButton(
                                 context,
@@ -222,12 +221,22 @@ class HomePage extends ConsumerWidget {
                                 ],
                               ),
                               
-                              const Spacer(),
+                              const SizedBox(height: 30),
                               
-                              // 底部退出登录按钮
+                              // 底部按钮区域
                               Container(
                                 width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 20),
+                                padding: EdgeInsets.only(
+                                  top: 16,
+                                  bottom: MediaQuery.of(context).padding.bottom + 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20),
+                                  ),
+                                ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
@@ -245,6 +254,11 @@ class HomePage extends ConsumerWidget {
                                           fontSize: 12,
                                         ),
                                       ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 20,
+                                      color: Colors.grey[300],
                                     ),
                                     TextButton.icon(
                                       onPressed: () async {
@@ -266,8 +280,68 @@ class HomePage extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                            ],
+                          ],
+                        ),
+                      ),
+                      
+                      // 推送内容到底部
+                      const Spacer(),
+                      
+                      // 底部按钮区域 - 紧贴底部
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.only(
+                          top: 20,
+                          bottom: MediaQuery.of(context).padding.bottom + 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
                           ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            TextButton.icon(
+                              onPressed: _launchUpdate,
+                              icon: Icon(
+                                Icons.system_update,
+                                size: 16,
+                                color: Colors.grey[600],
+                              ),
+                              label: Text(
+                                '检查更新',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 20,
+                              color: Colors.grey[300],
+                            ),
+                            TextButton.icon(
+                              onPressed: () async {
+                                await ref.read(authProvider.notifier).logout();
+                              },
+                              icon: Icon(
+                                Icons.logout,
+                                size: 16,
+                                color: Colors.grey[600],
+                              ),
+                              label: Text(
+                                '退出登录',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
