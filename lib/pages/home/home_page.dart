@@ -4,11 +4,119 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart' as provider;
 import '../../providers/auth_provider.dart';
 import '../../providers/diary_provider.dart';
+import '../../providers/emotion_provider.dart';
 import '../diary/diary_list_page.dart';
 import '../diary/diary_edit_page.dart';
+import '../../widgets/emotion_gradient_background.dart';
+import '../../widgets/emotion_test_button.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
+  
+  // 获取今日情绪数据（示例）
+  List<EmotionData> _getTodayEmotions() {
+    final now = DateTime.now();
+    return [
+      EmotionData(
+        emotion: '开心',
+        color: EmotionColorMapping.getEmotionColor('开心'),
+        intensity: 0.8,
+        time: now.subtract(const Duration(hours: 8)),
+      ),
+      EmotionData(
+        emotion: '难过',
+        color: EmotionColorMapping.getEmotionColor('难过'),
+        intensity: 0.6,
+        time: now.subtract(const Duration(hours: 4)),
+      ),
+      EmotionData(
+        emotion: '感动',
+        color: EmotionColorMapping.getEmotionColor('感动'),
+        intensity: 0.9,
+        time: now.subtract(const Duration(hours: 1)),
+      ),
+    ];
+  }
+
+  // 获取不同情绪场景的示例数据
+  static List<EmotionData> getEmotionScenario(String scenario) {
+    final now = DateTime.now();
+    
+    switch (scenario) {
+      case '单一强烈情绪':
+        return [
+          EmotionData(
+            emotion: '兴奋',
+            color: EmotionColorMapping.getEmotionColor('兴奋'),
+            intensity: 1.0,
+            time: now,
+          ),
+        ];
+      case '情绪冲突':
+        return [
+          EmotionData(
+            emotion: '开心',
+            color: EmotionColorMapping.getEmotionColor('开心'),
+            intensity: 0.7,
+            time: now.subtract(const Duration(hours: 2)),
+          ),
+          EmotionData(
+            emotion: '焦虑',
+            color: EmotionColorMapping.getEmotionColor('焦虑'),
+            intensity: 0.8,
+            time: now,
+          ),
+        ];
+      case '复杂情绪':
+        return [
+          EmotionData(
+            emotion: '平静',
+            color: EmotionColorMapping.getEmotionColor('平静'),
+            intensity: 0.5,
+            time: now.subtract(const Duration(hours: 6)),
+          ),
+          EmotionData(
+            emotion: '兴奋',
+            color: EmotionColorMapping.getEmotionColor('兴奋'),
+            intensity: 0.9,
+            time: now.subtract(const Duration(hours: 3)),
+          ),
+          EmotionData(
+            emotion: '满足',
+            color: EmotionColorMapping.getEmotionColor('满足'),
+            intensity: 0.7,
+            time: now.subtract(const Duration(hours: 1)),
+          ),
+          EmotionData(
+            emotion: '温暖',
+            color: EmotionColorMapping.getEmotionColor('温暖'),
+            intensity: 0.8,
+            time: now,
+          ),
+        ];
+      default:
+        return [
+          EmotionData(
+            emotion: '开心',
+            color: EmotionColorMapping.getEmotionColor('开心'),
+            intensity: 0.8,
+            time: now.subtract(const Duration(hours: 8)),
+          ),
+          EmotionData(
+            emotion: '难过',
+            color: EmotionColorMapping.getEmotionColor('难过'),
+            intensity: 0.6,
+            time: now.subtract(const Duration(hours: 4)),
+          ),
+          EmotionData(
+            emotion: '感动',
+            color: EmotionColorMapping.getEmotionColor('感动'),
+            intensity: 0.9,
+            time: now.subtract(const Duration(hours: 1)),
+          ),
+        ];
+    }
+  }
 
   Future<void> _launchUpdate() async {
     final Uri url = Uri.parse('https://www.pgyer.com/mood_diary');
@@ -35,18 +143,40 @@ class HomePage extends ConsumerWidget {
 
     final user = authState.user!;
 
+    // 使用真实的情绪数据或默认数据
+    final emotionProvider = provider.Provider.of<EmotionProvider>(context);
+    final todayEmotion = emotionProvider.getTodayEmotion();
+    
+    // 添加调试信息
+    print('=== 主页面构建 ===');
+    print('主页面刷新 - 今日情绪数据: ${todayEmotion != null ? '有数据' : '无数据'}');
+    if (todayEmotion != null) {
+      print('- 情绪数量: ${todayEmotion.emotions.length}');
+      print('- 渐变类型: ${todayEmotion.gradientType}');
+      print('- 情绪详情: ${todayEmotion.emotions.map((e) => e.emotion).join(', ')}');
+    }
+    print('=== 主页面构建结束 ===');
+    
+    List<EmotionData> emotions;
+    EmotionGradientType gradientType;
+    
+    if (todayEmotion != null) {
+      // 使用真实的情绪分析数据
+      emotions = todayEmotion.emotions;
+      gradientType = todayEmotion.gradientType;
+      print('使用真实情绪数据');
+    } else {
+      // 使用默认示例数据
+      emotions = emotionProvider.getDefaultEmotions();
+      gradientType = EmotionColorMapping.suggestGradientType(emotions);
+      print('使用默认情绪数据');
+    }
+    
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6C63FF),
-              Color(0xFF4F46E5),
-            ],
-          ),
-        ),
+      body: EmotionGradientBackground(
+        emotions: emotions,
+        gradientType: gradientType,
+        animationDuration: const Duration(seconds: 4),
         child: SafeArea(
           child: Column(
             children: [
@@ -154,7 +284,7 @@ class HomePage extends ConsumerWidget {
                 child: Container(
                   margin: const EdgeInsets.only(top: 20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.75),
+                    color: Colors.white.withOpacity(0.1), // 进一步降低透明度
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
@@ -291,6 +421,7 @@ class HomePage extends ConsumerWidget {
           ),
         ),
       ),
+      floatingActionButton: const EmotionTestButton(),
     );
   }
 
