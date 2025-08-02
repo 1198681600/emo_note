@@ -133,8 +133,12 @@ class EmotionProvider with ChangeNotifier {
         return EmotionGradientType.radial;
       case 'EmotionGradientType.timeFlow':
         return EmotionGradientType.timeFlow;
+      case 'EmotionGradientType.multiPoint':
+        return EmotionGradientType.multiPoint;
       case 'EmotionGradientType.dayCircle':
         return EmotionGradientType.dayCircle;
+      case 'EmotionGradientType.diagonal':
+        return EmotionGradientType.diagonal;
       default:
         return EmotionGradientType.radial;
     }

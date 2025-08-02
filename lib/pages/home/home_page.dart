@@ -333,8 +333,9 @@ class HomePage extends ConsumerWidget {
     if (todayEmotion != null) {
       // 使用真实的情绪分析数据
       emotions = todayEmotion.emotions;
-      gradientType = todayEmotion.gradientType;
-      print('使用真实情绪数据');
+      // 使用本地智能算法重新计算最佳渐变类型
+      gradientType = EmotionColorMapping.suggestGradientType(emotions);
+      print('使用真实情绪数据，渐变类型: $gradientType');
     } else {
       // 使用默认示例数据
       emotions = emotionProvider.getDefaultEmotions();

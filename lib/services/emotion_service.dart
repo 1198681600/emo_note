@@ -108,9 +108,11 @@ class EmotionAnalysisResult {
       case 'timeFlow':
         return EmotionGradientType.timeFlow;
       case 'multiPoint':
+        return EmotionGradientType.multiPoint;
       case 'dayCircle':
         return EmotionGradientType.dayCircle;
       case 'diagonal':
+        return EmotionGradientType.diagonal;
       case 'wave':
         return EmotionGradientType.timeFlow; // 暂时映射到timeFlow
       default:
