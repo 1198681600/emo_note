@@ -112,8 +112,9 @@ class HomePage extends ConsumerWidget {
                       topRight: Radius.circular(30),
                     ),
                   ),
-                  child: Column(
-                    children: [
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
                       const SizedBox(height: 30),
                       
                       // 标题
@@ -223,69 +224,14 @@ class HomePage extends ConsumerWidget {
                               
                               const SizedBox(height: 30),
                               
-                              // 底部按钮区域
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.only(
-                                  top: 16,
-                                  bottom: MediaQuery.of(context).padding.bottom + 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    TextButton.icon(
-                                      onPressed: _launchUpdate,
-                                      icon: Icon(
-                                        Icons.system_update,
-                                        size: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                      label: Text(
-                                        '检查更新',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 1,
-                                      height: 20,
-                                      color: Colors.grey[300],
-                                    ),
-                                    TextButton.icon(
-                                      onPressed: () async {
-                                        await ref.read(authProvider.notifier).logout();
-                                      },
-                                      icon: Icon(
-                                        Icons.logout,
-                                        size: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                      label: Text(
-                                        '退出登录',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // 增加底部空间
+                              const SizedBox(height: 30),
                           ],
                         ),
                       ),
                       
-                      // 推送内容到底部
-                      const Spacer(),
+                      // 添加底部间距
+                      const SizedBox(height: 10),
                       
                       // 底部按钮区域 - 紧贴底部
                       Container(
@@ -345,6 +291,7 @@ class HomePage extends ConsumerWidget {
                         ),
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),

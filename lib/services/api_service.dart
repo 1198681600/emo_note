@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class ApiResponse<T> {
   final int code;
@@ -26,6 +27,9 @@ class ApiResponse<T> {
 class ApiService {
   static const String baseUrl = 'http://localhost:8080/api';
   static String? _token;
+  
+  // 添加 http 客户端依赖注入支持，方便测试
+  static http.Client httpClient = http.Client();
 
   static void setToken(String? token) {
     _token = token;
@@ -55,10 +59,17 @@ class ApiService {
 
       switch (method.toUpperCase()) {
         case 'GET':
-          response = await http.get(url, headers: _headers);
+          response = await httpClient.get(url, headers: _headers);
           break;
         case 'POST':
-          response = await http.post(
+          response = await httpClient.post(
+            url,
+            headers: _headers,
+            body: body != null ? jsonEncode(body) : null,
+          );
+          break;
+        case 'PUT':
+          response = await httpClient.put(
             url,
             headers: _headers,
             body: body != null ? jsonEncode(body) : null,
@@ -67,10 +78,11 @@ class ApiService {
         default:
           throw Exception('Unsupported HTTP method: $method');
       }
-
+      
       final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
       return ApiResponse.fromJson(jsonData, fromJson);
     } catch (e) {
+      debugPrint('API请求错误: $e');
       return ApiResponse<T>(
         code: 500,
         message: '网络请求失败: $e',
@@ -128,7 +140,7 @@ class ApiService {
     String? avatar,
   }) {
     return _request<Map<String, dynamic>>(
-      'PUT',
+      'POST',
       '/profile',
       body: {
         'nickname': nickname,
@@ -136,6 +148,17 @@ class ApiService {
         'age': age,
         'profession': profession,
         if (avatar != null) 'avatar': avatar,
+      },
+      fromJson: (data) => data as Map<String, dynamic>,
+    );
+  }
+
+  static Future<ApiResponse<Map<String, dynamic>>> generateUploadUrl(String fileType) {
+    return _request<Map<String, dynamic>>(
+      'POST',
+      '/upload/generate-url',
+      body: {
+        'file_type': fileType,
       },
       fromJson: (data) => data as Map<String, dynamic>,
     );

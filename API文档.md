@@ -12,9 +12,9 @@
 
 ```json
 {
-    "code": 200,
-    "message": "操作成功",
-    "data": {}
+   "code": 200,
+   "message": "操作成功",
+   "data": {}
 }
 ```
 
@@ -27,15 +27,15 @@
 **请求参数**:
 ```json
 {
-    "email": "user@example.com"
+   "email": "user@example.com"
 }
 ```
 
 **响应示例**:
 ```json
 {
-    "code": 200,
-    "message": "验证码已发送"
+   "code": 200,
+   "message": "验证码已发送"
 }
 ```
 
@@ -50,8 +50,8 @@
 **请求参数**:
 ```json
 {
-    "email": "user@example.com",
-    "code": "111111"
+   "email": "user@example.com",
+   "code": "111111"
 }
 ```
 
@@ -62,8 +62,8 @@
 **响应示例**:
 ```json
 {
-    "code": 200,
-    "message": "注册成功"
+   "code": 200,
+   "message": "注册成功"
 }
 ```
 
@@ -76,16 +76,16 @@
 **请求参数**:
 ```json
 {
-    "email": "user@example.com",
-    "code": "111111"
+   "email": "user@example.com",
+   "code": "111111"
 }
 ```
 
 **响应示例**:
 ```json
 {
-    "code": 200,
-    "message": "邮箱验证成功"
+   "code": 200,
+   "message": "邮箱验证成功"
 }
 ```
 
@@ -98,8 +98,8 @@
 **请求参数**:
 ```json
 {
-    "email": "user@example.com",
-    "code": "111111"
+   "email": "user@example.com",
+   "code": "111111"
 }
 ```
 
@@ -110,30 +110,105 @@
 **响应示例**:
 ```json
 {
-    "code": 200,
-    "message": "登录成功",
-    "data": {
-        "token": "a1b2c3d4e5f6...",
-        "user": {
-            "id": 1,
-            "email": "user@example.com",
-            "is_email_verified": true,
-            "avatar": "",
-            "nickname": "",
-            "gender": "",
-            "age": 0,
-            "profession": "",
-            "created_at": "2025-01-01T12:00:00Z",
-            "updated_at": "2025-01-01T12:00:00Z"
+   "code": 200,
+   "message": "登录成功",
+   "data": {
+      "token": "a1b2c3d4e5f6...",
+      "user": {
+         "id": 1,
+         "email": "user@example.com",
+         "is_email_verified": true,
+         "avatar": "",
+         "nickname": "",
+         "gender": "",
+         "age": 0,
+         "profession": "",
+         "created_at": "2025-01-01T12:00:00Z",
+         "updated_at": "2025-01-01T12:00:00Z"
+      }
+   }
+}
+```
+
+**说明**:
+- 使用邮箱验证码登录，无需密码
+- Token 有效期24小时
+- 请将 token 保存并在后续请求中使用
+
+---
+
+## 情绪分析 API
+
+### 1. 分析一天中的情绪变化
+
+**接口地址**: `POST /api/emotion/analyze-daily`
+
+**请求头**:
+```
+Authorization: Bearer <your_token>
+```
+
+**请求参数**:
+```json
+{
+    "user_data": [
+        {
+            "timestamp": "2025-01-01T09:00:00Z",
+            "emotion": "开心",
+            "intensity": 8,
+            "content": "今天心情很好"
+        },
+        {
+            "timestamp": "2025-01-01T14:00:00Z", 
+            "emotion": "焦虑",
+            "intensity": 6,
+            "content": "工作压力有点大"
         }
+    ]
+}
+```
+
+**参数说明**:
+- `user_data`: 用户情绪数据数组
+   - `timestamp`: 时间戳 (ISO 8601格式)
+   - `emotion`: 情绪类型 (如：开心、焦虑、愤怒等)
+   - `intensity`: 情绪强度 (1-10分)
+   - `content`: 相关内容描述
+
+**响应示例**:
+```json
+{
+    "code": 200,
+    "message": "情绪分析完成",
+    "data": {
+        "daily_pattern": [
+            {
+                "hour": 9,
+                "dominant_emotion": "积极",
+                "average_score": 7.5,
+                "count": 3
+            },
+            {
+                "hour": 14,
+                "dominant_emotion": "焦虑",
+                "average_score": 6.0,
+                "count": 2
+            }
+        ],
+        "summary": "用户在上午时段情绪较为积极，下午出现轻度焦虑情况",
+        "recommendations": [
+            "建议在下午时段增加放松活动",
+            "可以尝试深呼吸或短暂休息来缓解焦虑"
+        ],
+        "trend_analysis": "整体情绪波动正常，需要关注下午时段的压力管理"
     }
 }
 ```
 
-**说明**: 
-- 使用邮箱验证码登录，无需密码
-- Token 有效期24小时
-- 请将 token 保存并在后续请求中使用
+**说明**:
+- 需要用户登录认证
+- 基于Claude AI进行智能分析
+- 返回详细的情绪模式和建议
 
 ---
 
@@ -141,7 +216,7 @@
 
 以下接口需要在请求头中携带 `Authorization: Bearer <token>`
 
-### 5. 获取用户信息
+### 2. 获取用户信息
 
 **接口地址**: `GET /api/profile`
 
@@ -172,30 +247,9 @@ Authorization: Bearer <your_token>
 
 ---
 
-### 6. 退出登录
+### 3. 更新用户信息
 
-**接口地址**: `POST /api/logout`
-
-**请求头**:
-```
-Authorization: Bearer <your_token>
-```
-
-**响应示例**:
-```json
-{
-    "code": 200,
-    "message": "退出登录成功"
-}
-```
-
-**说明**: 退出登录后 token 将失效
-
----
-
-### 7. 更新用户信息
-
-**接口地址**: `PUT /api/profile`
+**接口地址**: `POST /api/profile`
 
 **请求头**:
 ```
@@ -214,17 +268,17 @@ Authorization: Bearer <your_token>
 ```
 
 **参数说明**:
-- `nickname`: 昵称，必填
-- `gender`: 性别，必填（男/女）
-- `age`: 年龄，必填
-- `profession`: 职业，必填
-- `avatar`: 头像URL，可选
+- `nickname`: 昵称 (可选)
+- `gender`: 性别 (可选)
+- `age`: 年龄 (可选)
+- `profession`: 职业 (可选)
+- `avatar`: 头像URL (可选)
 
 **响应示例**:
 ```json
 {
     "code": 200,
-    "message": "个人信息更新成功",
+    "message": "更新用户信息成功",
     "data": {
         "id": 1,
         "email": "user@example.com",
@@ -235,10 +289,104 @@ Authorization: Bearer <your_token>
         "age": 25,
         "profession": "软件工程师",
         "created_at": "2025-01-01T12:00:00Z",
-        "updated_at": "2025-01-01T12:30:00Z"
+        "updated_at": "2025-01-01T14:30:00Z"
     }
 }
 ```
+
+**说明**:
+- 所有参数都是可选的，只更新提供的字段
+- 需要用户登录认证
+
+---
+
+### 4. 生成文件上传链接
+
+**接口地址**: `POST /api/upload/generate-url`
+
+**请求头**:
+```
+Authorization: Bearer <your_token>
+```
+
+**请求参数**:
+```json
+{
+    "file_type": "image/jpeg"
+}
+```
+
+**参数说明**:
+- `file_type`: 文件类型，支持的类型：
+   - `image/jpeg` 或 `image/jpg`: JPEG图片
+   - `image/png`: PNG图片
+   - `image/webp`: WebP图片
+
+**响应示例**:
+```json
+{
+    "code": 200,
+    "message": "生成上传链接成功",
+    "data": {
+        "upload_url": "https://account_id.r2.cloudflarestorage.com/bucket/avatars/uuid.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&...",
+        "file_url": "https://account_id.r2.cloudflarestorage.com/bucket/avatars/uuid.jpg",
+        "file_name": "avatars/uuid.jpg",
+        "expires_in": 900
+    }
+}
+```
+
+**使用流程**:
+1. 调用此接口获取预签名上传URL
+2. 使用 `upload_url` 通过 HTTP PUT 请求直接上传文件到R2
+3. 上传成功后，使用 `file_url` 作为头像URL调用更新用户信息接口
+
+**上传文件示例**:
+```bash
+# 1. 获取上传链接
+curl -X POST http://localhost:8080/api/upload/generate-url \
+  -H "Authorization: Bearer your_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{"file_type":"image/jpeg"}'
+
+# 2. 使用返回的upload_url上传文件
+curl -X PUT "返回的upload_url" \
+  -H "Content-Type: image/jpeg" \
+  --data-binary @avatar.jpg
+
+# 3. 更新用户头像
+curl -X POST http://localhost:8080/api/profile \
+  -H "Authorization: Bearer your_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{"avatar":"返回的file_url"}'
+```
+
+**说明**:
+- 上传链接有效期15分钟
+- 文件会保存到 `avatars/` 目录下
+- 需要用户登录认证
+- 需要配置Cloudflare R2环境变量
+
+---
+
+### 5. 退出登录
+
+**接口地址**: `POST /api/logout`
+
+**请求头**:
+```
+Authorization: Bearer <your_token>
+```
+
+**响应示例**:
+```json
+{
+    "code": 200,
+    "message": "退出登录成功"
+}
+```
+
+**说明**: 退出登录后 token 将失效
 
 ---
 
@@ -336,16 +484,47 @@ Authorization: Bearer <your_token>
      -d '{"email":"test@example.com","code":"111111"}'
    ```
 
-5. **获取用户信息**
+3. **获取用户信息**
    ```bash
    curl -X GET http://localhost:8080/api/profile \
      -H "Authorization: Bearer your_token_here"
    ```
 
-6. **退出登录**
+4. **更新用户信息**
+   ```bash
+   curl -X PUT http://localhost:8080/api/profile \
+     -H "Authorization: Bearer your_token_here" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "nickname": "我的昵称",
+       "gender": "男",
+       "age": 25,
+       "profession": "软件工程师",
+       "avatar": "https://example.com/avatar.jpg"
+     }'
+   ```
+
+5. **退出登录**
    ```bash
    curl -X POST http://localhost:8080/api/logout \
      -H "Authorization: Bearer your_token_here"
+   ```
+
+6. **分析情绪变化**
+   ```bash
+   curl -X POST http://localhost:8080/api/emotion/analyze-daily \
+     -H "Authorization: Bearer your_token_here" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "user_data": [
+         {
+           "timestamp": "2025-01-01T09:00:00Z",
+           "emotion": "开心",
+           "intensity": 8,
+           "content": "今天心情很好"
+         }
+       ]
+     }'
    ```
 
 ## 数据库表结构

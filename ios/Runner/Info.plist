@@ -47,5 +47,9 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>需要访问您的相机来拍摄头像照片</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>需要访问您的相册来选择头像照片</string>
 	</dict>
 </plist>

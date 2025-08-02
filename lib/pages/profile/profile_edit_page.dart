@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/avatar_upload_service.dart';
 
 class ProfileEditPage extends ConsumerStatefulWidget {
   final bool isFirstTime;
@@ -22,6 +25,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   
   String _selectedGender = '';
   bool _isLoading = false;
+  
+  // Avatar handling
+  final ImagePicker _imagePicker = ImagePicker();
+  File? _selectedAvatarFile;
+  bool _isUploadingAvatar = false;
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -36,6 +45,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       _ageController.text = user.age > 0 ? user.age.toString() : '';
       _professionController.text = user.profession;
       _selectedGender = user.gender;
+      _avatarUrl = user.avatar.isNotEmpty ? user.avatar : null;
     }
   }
 
@@ -45,6 +55,114 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     _ageController.dispose();
     _professionController.dispose();
     super.dispose();
+  }
+  
+  // 选择照片方法
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      
+      if (pickedFile == null) return;
+      
+      setState(() {
+        _selectedAvatarFile = File(pickedFile.path);
+        _isUploadingAvatar = true;
+      });
+      
+      // 上传头像
+      await _uploadAvatar();
+      
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择图片失败: $e')),
+        );
+      }
+    }
+  }
+  
+  // 上传头像方法
+  Future<void> _uploadAvatar() async {
+    if (_selectedAvatarFile == null) return;
+    
+    try {
+      final success = await AvatarUploadService.uploadAvatar(_selectedAvatarFile!);
+      
+      if (success) {
+        // 获取最新的用户资料，包括更新后的头像
+        await ref.read(authProvider.notifier).updateProfile(
+          nickname: _nicknameController.text.trim(),
+          gender: _selectedGender,
+          age: int.tryParse(_ageController.text.trim()) ?? 0,
+          profession: _professionController.text.trim(),
+        );
+        
+        final user = ref.read(authProvider).user;
+        if (user != null && mounted) {
+          setState(() {
+            _avatarUrl = user.avatar;
+            _isUploadingAvatar = false;
+          });
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('头像上传成功'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        throw Exception('头像上传失败');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('上传失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  // 显示头像选择选项
+  void _showImageSourceOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('拍照'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('从相册选择'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
 
@@ -165,11 +283,20 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.grey[200],
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.grey[400],
-                      ),
+                      backgroundImage: _selectedAvatarFile != null 
+                          ? FileImage(_selectedAvatarFile!) 
+                          : (_avatarUrl != null && _avatarUrl!.isNotEmpty 
+                              ? NetworkImage(_avatarUrl!) as ImageProvider
+                              : null),
+                      child: (_selectedAvatarFile == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
+                          ? Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.grey[400],
+                            )
+                          : _isUploadingAvatar 
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : null,
                     ),
                     Positioned(
                       bottom: 0,
@@ -180,12 +307,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: IconButton(
-                          onPressed: () {
-                            // TODO: 实现头像选择功能
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('头像功能开发中...')),
-                            );
-                          },
+                          onPressed: _isUploadingAvatar ? null : _showImageSourceOptions,
                           icon: const Icon(
                             Icons.camera_alt,
                             color: Colors.white,
