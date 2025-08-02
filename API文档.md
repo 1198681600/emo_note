@@ -12,9 +12,9 @@
 
 ```json
 {
-   "code": 200,
-   "message": "操作成功",
-   "data": {}
+  "code": 200,
+  "message": "操作成功",
+  "data": {}
 }
 ```
 
@@ -27,15 +27,15 @@
 **请求参数**:
 ```json
 {
-   "email": "user@example.com"
+    "email": "user@example.com"
 }
 ```
 
 **响应示例**:
 ```json
 {
-   "code": 200,
-   "message": "验证码已发送"
+    "code": 200,
+    "message": "验证码已发送"
 }
 ```
 
@@ -50,8 +50,8 @@
 **请求参数**:
 ```json
 {
-   "email": "user@example.com",
-   "code": "111111"
+    "email": "user@example.com",
+    "code": "111111"
 }
 ```
 
@@ -62,8 +62,8 @@
 **响应示例**:
 ```json
 {
-   "code": 200,
-   "message": "注册成功"
+    "code": 200,
+    "message": "注册成功"
 }
 ```
 
@@ -76,16 +76,16 @@
 **请求参数**:
 ```json
 {
-   "email": "user@example.com",
-   "code": "111111"
+    "email": "user@example.com",
+    "code": "111111"
 }
 ```
 
 **响应示例**:
 ```json
 {
-   "code": 200,
-   "message": "邮箱验证成功"
+    "code": 200,
+    "message": "邮箱验证成功"
 }
 ```
 
@@ -98,8 +98,8 @@
 **请求参数**:
 ```json
 {
-   "email": "user@example.com",
-   "code": "111111"
+    "email": "user@example.com",
+    "code": "111111"
 }
 ```
 
@@ -110,23 +110,23 @@
 **响应示例**:
 ```json
 {
-   "code": 200,
-   "message": "登录成功",
-   "data": {
-      "token": "a1b2c3d4e5f6...",
-      "user": {
-         "id": 1,
-         "email": "user@example.com",
-         "is_email_verified": true,
-         "avatar": "",
-         "nickname": "",
-         "gender": "",
-         "age": 0,
-         "profession": "",
-         "created_at": "2025-01-01T12:00:00Z",
-         "updated_at": "2025-01-01T12:00:00Z"
-      }
-   }
+    "code": 200,
+    "message": "登录成功",
+    "data": {
+        "token": "a1b2c3d4e5f6...",
+        "user": {
+            "id": 1,
+            "email": "user@example.com",
+            "is_email_verified": true,
+            "avatar": "",
+            "nickname": "",
+            "gender": "",
+            "age": 0,
+            "profession": "",
+            "created_at": "2025-01-01T12:00:00Z",
+            "updated_at": "2025-01-01T12:00:00Z"
+        }
+    }
 }
 ```
 
@@ -170,10 +170,10 @@ Authorization: Bearer <your_token>
 
 **参数说明**:
 - `user_data`: 用户情绪数据数组
-   - `timestamp`: 时间戳 (ISO 8601格式)
-   - `emotion`: 情绪类型 (如：开心、焦虑、愤怒等)
-   - `intensity`: 情绪强度 (1-10分)
-   - `content`: 相关内容描述
+    - `timestamp`: 时间戳 (ISO 8601格式)
+    - `emotion`: 情绪类型 (如：开心、焦虑、愤怒等)
+    - `intensity`: 情绪强度 (1-10分)
+    - `content`: 相关内容描述
 
 **响应示例**:
 ```json
@@ -249,7 +249,7 @@ Authorization: Bearer <your_token>
 
 ### 3. 更新用户信息
 
-**接口地址**: `POST /api/profile`
+**接口地址**: `PUT /api/profile`
 
 **请求头**:
 ```
@@ -318,9 +318,9 @@ Authorization: Bearer <your_token>
 
 **参数说明**:
 - `file_type`: 文件类型，支持的类型：
-   - `image/jpeg` 或 `image/jpg`: JPEG图片
-   - `image/png`: PNG图片
-   - `image/webp`: WebP图片
+    - `image/jpeg` 或 `image/jpg`: JPEG图片
+    - `image/png`: PNG图片
+    - `image/webp`: WebP图片
 
 **响应示例**:
 ```json
@@ -390,6 +390,212 @@ Authorization: Bearer <your_token>
 
 ---
 
+## 日记 API
+
+### 1. 创建日记
+
+**接口地址**: `POST /api/diary/create`
+
+**说明**: 创建一篇新的日记。每个用户每天只能创建一篇日记。
+
+**请求头**:
+`Authorization: Bearer <your_token>`
+
+**查询参数**:
+- `date`: 日期，格式为 `YYYY-MM-DD` (可选, 默认是当天的 UTC+8 日期)。
+
+**请求参数**:
+```json
+{
+    "content": "这是我的第一篇日记。"
+}
+```
+
+**参数说明**:
+- `content`: 日记内容 (必填)
+
+**响应示例**:
+```json
+{
+    "ID": 1,
+    "CreatedAt": "2025-08-03T10:00:00Z",
+    "UpdatedAt": "2025-08-03T10:00:00Z",
+    "DeletedAt": null,
+    "UserID": 1,
+    "Date": "2025-08-03T00:00:00Z",
+    "Content": "这是我的第一篇日记。"
+}
+```
+
+**错误响应**:
+```json
+{
+    "error": "diary already exists for this date"
+}
+```
+
+---
+
+### 2. 获取用户的所有日记
+
+**接口地址**: `POST /api/diary/list`
+
+**说明**: 获取当前用户的所有日记，按创建时间降序排列。
+
+**请求头**:
+`Authorization: Bearer <your_token>`
+
+**请求参数**: 无需请求体
+
+**响应示例**:
+```json
+[
+    {
+        "ID": 2,
+        "CreatedAt": "2025-08-04T10:00:00Z",
+        "UpdatedAt": "2025-08-04T10:00:00Z",
+        "DeletedAt": null,
+        "UserID": 1,
+        "Date": "2025-08-04T00:00:00Z",
+        "Content": "这是我的第二篇日记。"
+    },
+    {
+        "ID": 1,
+        "CreatedAt": "2025-08-03T10:00:00Z",
+        "UpdatedAt": "2025-08-03T10:00:00Z",
+        "DeletedAt": null,
+        "UserID": 1,
+        "Date": "2025-08-03T00:00:00Z",
+        "Content": "这是我的第一篇日记。"
+    }
+]
+```
+
+---
+
+### 3. 获取单篇日记
+
+**接口地址**: `POST /api/diary/get`
+
+**说明**: 获取指定 ID 的日记。
+
+**请求头**:
+`Authorization: Bearer <your_token>`
+
+**请求参数**:
+```json
+{
+    "id": 1
+}
+```
+
+**参数说明**:
+- `id`: 日记的唯一 ID (必填)
+
+**响应示例**:
+```json
+{
+    "ID": 1,
+    "CreatedAt": "2025-08-03T10:00:00Z",
+    "UpdatedAt": "2025-08-03T10:00:00Z",
+    "DeletedAt": null,
+    "UserID": 1,
+    "Date": "2025-08-03T00:00:00Z",
+    "Content": "这是我的第一篇日记。"
+}
+```
+
+**错误响应**:
+```json
+{
+    "error": "unauthorized"
+}
+```
+或
+```json
+{
+    "error": "Diary not found"
+}
+```
+
+---
+
+### 4. 更新日记
+
+**接口地址**: `POST /api/diary/update`
+
+**说明**: 更新指定 ID 的日记。
+
+**请求头**:
+`Authorization: Bearer <your_token>`
+
+**请求参数**:
+```json
+{
+    "id": 1,
+    "content": "更新后的日记内容。"
+}
+```
+
+**参数说明**:
+- `id`: 日记的唯一 ID (必填)
+- `content`: 更新后的日记内容 (必填)
+
+**响应示例**:
+```json
+{
+    "ID": 1,
+    "CreatedAt": "2025-08-03T10:00:00Z",
+    "UpdatedAt": "2025-08-03T11:00:00Z",
+    "DeletedAt": null,
+    "UserID": 1,
+    "Date": "2025-08-03T00:00:00Z",
+    "Content": "更新后的日记内容。"
+}
+```
+
+**错误响应**:
+```json
+{
+    "error": "unauthorized"
+}
+```
+
+---
+
+### 5. 删除日记
+
+**接口地址**: `POST /api/diary/delete`
+
+**说明**: 删除指定 ID 的日记。
+
+**请求头**:
+`Authorization: Bearer <your_token>`
+
+**请求参数**:
+```json
+{
+    "id": 1
+}
+```
+
+**参数说明**:
+- `id`: 日记的唯一 ID (必填)
+
+**响应示例**:
+```json
+{
+    "message": "Diary deleted successfully"
+}
+```
+
+**错误响应**:
+```json
+{
+    "error": "unauthorized"
+}
+```
+
 ## 错误码说明
 
 | 错误码 | 说明 |
@@ -397,6 +603,9 @@ Authorization: Bearer <your_token>
 | 200 | 操作成功 |
 | 400 | 请求参数错误 |
 | 401 | 未授权/token无效 |
+| 403 | 无权限访问 |
+| 404 | 资源不存在 |
+| 409 | 资源冲突 |
 | 500 | 服务器内部错误 |
 
 ## 常见错误响应
@@ -404,40 +613,40 @@ Authorization: Bearer <your_token>
 ### 参数错误
 ```json
 {
-    "code": 400,
-    "message": "请求参数错误"
+  "code": 400,
+  "message": "请求参数错误"
 }
 ```
 
 ### 用户已存在
 ```json
 {
-    "code": 400,
-    "message": "用户已存在"
+  "code": 400,
+  "message": "用户已存在"
 }
 ```
 
 ### 验证码错误
 ```json
 {
-    "code": 400,
-    "message": "验证码无效或已过期"
+  "code": 400,
+  "message": "验证码无效或已过期"
 }
 ```
 
 ### 用户不存在
 ```json
 {
-    "code": 400,
-    "message": "用户不存在"
+  "code": 400,
+  "message": "用户不存在"
 }
 ```
 
 ### 邮箱未验证
 ```json
 {
-    "code": 400,
-    "message": "请先验证邮箱"
+  "code": 400,
+  "message": "请先验证邮箱"
 }
 ```
 
@@ -445,8 +654,8 @@ Authorization: Bearer <your_token>
 ### Token无效
 ```json
 {
-    "code": 401,
-    "message": "token无效或已过期"
+  "code": 401,
+  "message": "token无效或已过期"
 }
 ```
 

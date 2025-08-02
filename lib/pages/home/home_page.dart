@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart' as provider;
 import '../../providers/auth_provider.dart';
+import '../../providers/diary_provider.dart';
+import '../diary/diary_list_page.dart';
+import '../diary/diary_edit_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -150,10 +154,7 @@ class HomePage extends ConsumerWidget {
                                 subtitle: '写下今天的情绪和感受',
                                 color: const Color(0xFF6C63FF),
                                 onTap: () {
-                                  // TODO: 导航到心情记录页面
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('功能开发中...')),
-                                  );
+                                  _handleRecordMood(context);
                                 },
                               ),
                               
@@ -181,8 +182,11 @@ class HomePage extends ConsumerWidget {
                                       title: '历史记录',
                                       color: Colors.green,
                                       onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('功能开发中...')),
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const DiaryListPage(),
+                                          ),
                                         );
                                       },
                                     ),
@@ -408,5 +412,38 @@ class HomePage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  // 处理记录心情按钮点击
+  void _handleRecordMood(BuildContext context) async {
+    final diaryProvider = provider.Provider.of<DiaryProvider>(context, listen: false);
+    
+    // 确保日记列表已加载
+    if (diaryProvider.diaries.isEmpty && !diaryProvider.isLoading) {
+      await diaryProvider.loadDiaries();
+    }
+    
+    // 检查今天是否已有日记
+    final todayDiary = diaryProvider.getTodayDiary();
+    
+    if (!context.mounted) return;
+    
+    if (todayDiary != null) {
+      // 今天已有日记，打开编辑模式
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DiaryEditPage(diary: todayDiary),
+        ),
+      );
+    } else {
+      // 今天没有日记，创建新日记
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DiaryEditPage(),
+        ),
+      );
+    }
   }
 }
